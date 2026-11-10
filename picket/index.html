@@ -182,7 +182,7 @@
 
   /* ---------- rotate button support: sizes follow the picket box, not the screen ---------- */
   #rotor{position:fixed;left:0;top:0;width:100%;height:100%;z-index:2;pointer-events:none;container:picket/size}
-  #rotor #stage.on{pointer-events:auto}
+  #rotor #stage.on,#rotor #gifbox.on{pointer-events:auto}
   body.rot #rotor{transform-origin:0 0}
   @supports (width:1cqw){
   @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.2cqmin)}}
@@ -257,6 +257,18 @@
   .s-blink .wrap::after{content:"";position:absolute;inset:-3cqmin -4cqmin;border:1cqmin solid var(--c);border-radius:4cqmin;animation:blink 1.4s ease-in-out infinite reverse;z-index:-1}
   #bar{position:fixed;left:50%;bottom:calc(4cqmin + env(safe-area-inset-bottom));transform:translate(-50%,30px);display:flex;flex-wrap:wrap;justify-content:center;gap:10px;z-index:10;opacity:0;pointer-events:none;transition:.25s;width:max-content;max-width:94cqw}
   }
+  @supports (width:1cqw){
+    #rotor #gifPreview{max-height:42cqh}
+    @container picket (max-height:560px){
+      #rotor #gifbox .card{padding:12px 18px}
+      #rotor #gifbox h2{font-size:16px;margin-bottom:2px}
+      #rotor #gifbox p{font-size:12px;margin:2px 0 4px}
+      #rotor #gifPreview{max-height:36cqh}
+      #rotor #gifbox .actions{margin-top:8px}
+      #rotor #gifbox .actions button{padding:9px;font-size:15px}
+      #rotor #gifSaveHint,#rotor #gifDone > p:nth-last-of-type(1){display:none}
+    }
+  }
   @supports not (width:1cqw){ #bRot{display:none!important} }
 </style>
 </head>
@@ -305,19 +317,7 @@
   <div class="card">
     <div id="gifPick">
       <h2>📥 지금 화면을 GIF로 저장</h2>
-      <p>인터넷이 없어도 사진 앱에서 계속 움직이는 파일로 만들어요.<br>띄울 기기 화면에 꽉 차도록 비율을 맞춰요.</p>
-      <div class="optlabel">어디에 띄우나요?</div>
-      <div class="orient devs" id="gDev">
-        <button data-dev="this"><i style="width:30px;height:44px;border-radius:8px"></i>지금 이 기기</button>
-        <button data-dev="ipad"><i style="width:46px;height:32px"></i>아이패드</button>
-        <button data-dev="iphone"><i style="width:56px;height:26px;border-radius:9px"></i>아이폰</button>
-        <button data-dev="galaxy"><i style="width:58px;height:26px;border-radius:7px"></i>갤럭시</button>
-      </div>
-      <div class="optlabel">방향</div>
-      <div class="orient" id="gOri">
-        <button data-ori="land" class="sel"><i style="width:46px;height:32px"></i>가로</button>
-        <button data-ori="port"><i style="width:32px;height:46px"></i>세로</button>
-      </div>
+      <p>지금 화면 모양 그대로 저장돼요.<br>가로·세로는 ↻ 화면 돌리기로 바꾼 뒤 저장하세요.</p>
       <div class="actions"><button class="go" id="gifMake">GIF 만들기</button></div>
       <button class="linkbtn" data-gifclose>닫기</button>
     </div>
@@ -585,6 +585,7 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
   const rotor=document.createElement('div');rotor.id='rotor';
   const st=document.getElementById('stage'), br=document.getElementById('bar');
   st.parentNode.insertBefore(rotor,st);rotor.appendChild(st);rotor.appendChild(br);
+  const gb=document.getElementById('gifbox'); if(gb) rotor.appendChild(gb); // GIF window turns with the picket
   let rot=0;try{rot=(parseInt(localStorage.getItem('picket_rot'),10)||0)%4;}catch(e){}
   function apply(){
     const W=innerWidth,H=innerHeight, side=rot%2===1;
@@ -898,31 +899,27 @@ const prog=document.getElementById('gifProg'), progT=document.getElementById('gi
 let dl=null, lastBlob=null, lastName='', busy=false, blobUrl=null;
 if(window.claude&&typeof claude.use==='function'){claude.use('downloads').then(x=>{dl=x;}).catch(()=>{});}
 function showStep(s){[stepPick,stepWork,stepDone].forEach(e=>e.hidden=e!==s);}
-document.getElementById('bGif').onclick=e=>{e.stopPropagation();if(!current)return;showStep(stepPick);box.classList.add('on');hideBar();};
+document.getElementById('bGif').onclick=e=>{e.stopPropagation();if(!current||busy)return;box.classList.add('on');hideBar();document.getElementById('gifMake').click();};
 document.querySelectorAll('[data-gifclose]').forEach(b=>b.onclick=()=>{if(!busy)box.classList.remove('on');});
-const TOUCH=(navigator.maxTouchPoints||0)>0 && Math.min(screen.width,screen.height)<=1100;
-let gDev=TOUCH?'this':'ipad', gOri='land';
-document.querySelectorAll('#gDev button').forEach(x=>x.classList.toggle('sel',x.dataset.dev===gDev));
-function pickRow(id,attr,set){document.querySelectorAll('#'+id+' button').forEach(b=>b.onclick=()=>{set(b.dataset[attr]);document.querySelectorAll('#'+id+' button').forEach(x=>x.classList.toggle('sel',x===b));});}
-pickRow('gDev','dev',v=>gDev=v); pickRow('gOri','ori',v=>gOri=v);
 function gifSize(){
-  // long side / short side of the screen the GIF will be shown on
-  const R={ipad:1.43, iphone:2.165, galaxy:2.2};   // iPad 10th/Air/Pro 11, iPhone X~16, Galaxy S/A (19.5:9~20:9)
-  let ratio=R[gDev];
-  if(gDev==='this'){const a=Math.min(screen.width,screen.height),b=Math.max(screen.width,screen.height);ratio=a?b/a:1.43;}
-  ratio=Math.min(Math.max(ratio,1.25),2.4);
+  // the GIF takes the shape the picket has on screen right now (↻ decides landscape/portrait)
+  // and this device's own screen proportions, so it fills the screen on any phone or tablet
+  const box=document.getElementById('rotor')||document.documentElement;
+  const land=box.clientWidth>=box.clientHeight;
+  const a=Math.min(screen.width,screen.height)||Math.min(innerWidth,innerHeight), b=Math.max(screen.width,screen.height)||Math.max(innerWidth,innerHeight);
+  let ratio=a?b/a:1.43; ratio=Math.min(Math.max(ratio,1.25),2.4);
   const short=720, long=Math.round(short*ratio/2)*2;
-  return gOri==='land'?[long,short]:[short,long];
+  return land?[long,short,true]:[short,long,false];
 }
 document.getElementById('gifMake').onclick=async()=>{
   if(busy||!current)return; busy=true;
-  const land=gOri==='land'; const [W,H]=gifSize();
+  const [W,H,land]=gifSize();
   showStep(stepWork); prog.style.width='0%'; progT.textContent='0%';
   const m={ko:current.ko,en:current.en,color:current.color,style:current.style};
   try{
     lastBlob=await makeGif(m,flipped,W,H,p=>{const v=Math.round(p*100);prog.style.width=v+'%';progT.textContent=v+'%';});
     const safe=m.ko.replace(/\s+/g,'').replace(/[\\/:*?"<>|]/g,'').slice(0,20)||'멘트';
-    lastName=`피켓_${safe}_${({this:'이기기',ipad:'아이패드',iphone:'아이폰',galaxy:'갤럭시'})[gDev]}_${land?'가로':'세로'}.gif`;
+    lastName=`피켓_${safe}_${land?'가로':'세로'}.gif`;
     const fr=new FileReader();
     fr.onload=()=>{prevImg.src=fr.result;};
     fr.readAsDataURL(lastBlob);
