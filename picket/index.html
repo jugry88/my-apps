@@ -586,7 +586,7 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
   const st=document.getElementById('stage'), br=document.getElementById('bar');
   st.parentNode.insertBefore(rotor,st);rotor.appendChild(st);rotor.appendChild(br);
   const gb=document.getElementById('gifbox'); if(gb) rotor.appendChild(gb); // GIF window turns with the picket
-  let rot=0;try{rot=(parseInt(localStorage.getItem('picket_rot'),10)||0)%4;}catch(e){}
+  let rot=0;try{rot=(parseInt(localStorage.getItem('picket_rot'),10)||0)===1?1:0;}catch(e){}
   function apply(){
     const W=innerWidth,H=innerHeight, side=rot%2===1;
     document.body.classList.toggle('rot',rot!==0);
@@ -598,7 +598,7 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
   apply();
   addEventListener('resize',apply);addEventListener('orientationchange',()=>setTimeout(apply,300));
   document.getElementById('bRot').onclick=e=>{
-    e.stopPropagation();rot=(rot+1)%4;try{localStorage.setItem('picket_rot',String(rot));}catch(err){}
+    e.stopPropagation();rot=rot?0:1;try{localStorage.setItem('picket_rot',String(rot));}catch(err){}
     apply();
     if(current&&current.style==='party'){stopConfetti();confetti();}
     showBar();
