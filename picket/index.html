@@ -179,6 +179,85 @@
   #bar.show{opacity:1;transform:translate(-50%,0);pointer-events:auto}
   #bar button{border:0;border-radius:999px;padding:12px 18px;font:inherit;font-weight:700;font-size:15px;background:rgba(43,42,58,.86);color:#fff;cursor:pointer;white-space:nowrap}
   #bar button[hidden]{display:none}
+
+  /* ---------- rotate button support: sizes follow the picket box, not the screen ---------- */
+  #rotor{position:fixed;left:0;top:0;width:100%;height:100%;z-index:2;pointer-events:none;container:picket/size}
+  #rotor #stage.on{pointer-events:auto}
+  body.rot #rotor{transform-origin:0 0}
+  @supports (width:1cqw){
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.2cqmin)}}
+  .wrap{display:flex;flex-direction:column;align-items:center;position:relative;z-index:2;max-width:100%}
+  .msg{display:flex;flex-direction:column;align-items:center;width:100%}
+  .ko{font-weight:900;line-height:1.15;white-space:nowrap;letter-spacing:-.02em;display:flex;justify-content:center;color:var(--c);
+      font-size:min(calc(90cqw / var(--n,6)), calc(40cqh / (var(--l,1) + .4)))}
+  .ko span{display:inline-block}
+  .en{margin-top:1.6cqmin;font-weight:700;letter-spacing:.18em;text-transform:uppercase;font-size:min(4.6cqw,4cqmin);color:#7a7a86;text-align:center;padding:0 4cqw}
+  .fx{width:100cqw;max-width:100%;height:16cqmin;margin-top:3cqmin;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+  .fx:empty{display:none}
+  @container picket (orientation:landscape){
+    .ko{font-size:min(calc(86cqw / var(--n,6)), calc(46cqh / (var(--l,1) + .6)))}
+    .en{font-size:min(3cqw,5cqh)}
+    .fx{width:min(70cqw,110cqh);height:18cqh}
+  }
+  .stripe{position:absolute;left:0;right:0;bottom:0;height:1.6cqmin;display:flex;z-index:1}
+  .stripe i{flex:1}
+  .stripe i:nth-child(1){background:var(--orange)} .stripe i:nth-child(2){background:var(--yellow);flex:3}
+  .stripe i:nth-child(3){background:var(--purple);flex:1.2} .stripe i:nth-child(4){background:var(--sky);flex:3} .stripe i:nth-child(5){background:var(--blue)}
+
+  /* rainbow text */
+  .rainbow .ko span:nth-child(3n+1){color:var(--orange)} .rainbow .ko span:nth-child(3n+2){color:var(--purple)} .rainbow .ko span:nth-child(3n){color:var(--blue)}
+
+  /* style: arrow (움직여주세요) */
+  .s-arrow .ko{animation:nudge 1.6s ease-in-out infinite}
+  @keyframes nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(var(--dx,2.5cqmin))}}
+  .chev{display:flex;gap:1.5cqmin}
+  .chev svg{width:11cqmin;height:14cqmin;animation:chev 1.2s linear infinite;opacity:.15}
+  @container picket (orientation:landscape){.chev svg{width:9cqh;height:15cqh}}
+  @keyframes chev{0%{opacity:.12}30%{opacity:1}60%,100%{opacity:.12}}
+  .flip .chev{flex-direction:row-reverse}
+  .flip .chev svg{transform:scaleX(-1)}
+
+  /* style: queue (인터뷰 대기줄) */
+  .s-queue .ko span{animation:bob 1.4s ease-in-out infinite}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.4cqmin)}}
+  .queue{position:absolute;inset:0}
+  .person{position:absolute;bottom:8%;width:6cqmin;height:12cqmin;animation:walk 9s linear infinite}
+  @container picket (orientation:landscape){.person{width:6.5cqh;height:13cqh}}
+  .person svg{width:100%;height:100%;animation:step .6s ease-in-out infinite}
+  @keyframes walk{from{left:-10%}to{left:104%}}
+  @keyframes step{0%,100%{transform:translateY(0)}50%{transform:translateY(-8%)}}
+  .flip .person{animation-name:walkback}
+  @keyframes walkback{from{left:104%}to{left:-10%}}
+
+  /* style: slow (천천히) */
+  .s-slow .ko span{animation:breathe 3.6s ease-in-out infinite}
+  @keyframes breathe{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.08);opacity:.75}}
+  .track{position:relative;width:80%;height:1.2cqmin;border-radius:99px;background:rgba(84,79,156,.15)}
+  .track .dot{position:absolute;top:50%;width:5cqmin;height:5cqmin;border-radius:50%;background:var(--purple);transform:translate(-50%,-50%);animation:crawl 7s ease-in-out infinite alternate;box-shadow:0 0 0 1.4cqmin rgba(84,79,156,.18)}
+  @keyframes crawl{from{left:0}to{left:100%}}
+  .ripple{position:absolute;inset:0;z-index:0;pointer-events:none}
+  .ripple i{position:absolute;left:50%;top:50%;width:30cqmin;height:30cqmin;border-radius:50%;border:.5cqmin solid rgba(84,79,156,.18);transform:translate(-50%,-50%) scale(.2);animation:ring 6s ease-out infinite;opacity:0}
+  .ripple i:nth-child(2){animation-delay:2s} .ripple i:nth-child(3){animation-delay:4s}
+  @keyframes ring{0%{transform:translate(-50%,-50%) scale(.2);opacity:.9}100%{transform:translate(-50%,-50%) scale(5);opacity:0}}
+
+  /* style: party (환영합니다) */
+  .s-party .ko span{animation:pop 2.4s ease-in-out infinite}
+  @keyframes pop{0%,60%,100%{transform:translateY(0) scale(1)}25%{transform:translateY(-2.4cqmin) scale(1.08)}}
+  #confetti{position:absolute;left:0;top:0;width:100%;height:100%;z-index:1;pointer-events:none}
+  .balls{display:flex;gap:3cqmin}
+  .balls b{display:inline-block;width:6cqmin;height:6cqmin;border-radius:50%;animation:bounce 1.2s ease-in-out infinite}
+  @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-3cqmin)}}
+
+  /* style: plain (기본) */
+  .s-plain .ko{animation:float 3s ease-in-out infinite}
+
+  /* blink highlight (깜빡이) */
+  .s-blink .ko{animation:blink 1.4s ease-in-out infinite}
+  @keyframes blink{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.97)}}
+  .s-blink .wrap::after{content:"";position:absolute;inset:-3cqmin -4cqmin;border:1cqmin solid var(--c);border-radius:4cqmin;animation:blink 1.4s ease-in-out infinite reverse;z-index:-1}
+  #bar{position:fixed;left:50%;bottom:calc(4cqmin + env(safe-area-inset-bottom));transform:translate(-50%,30px);display:flex;flex-wrap:wrap;justify-content:center;gap:10px;z-index:10;opacity:0;pointer-events:none;transition:.25s;width:max-content;max-width:94cqw}
+  }
+  @supports not (width:1cqw){ #bRot{display:none!important} }
 </style>
 </head>
 <body>
@@ -195,7 +274,7 @@
     <button data-k="welcome" style="background:linear-gradient(120deg,var(--orange),var(--yellow),var(--sky),var(--blue))">환영합니다<small>WELCOME</small></button>
     <button class="custom" id="openEditor">✏️ 멘트 직접 입력<small>원하는 문구를 써서 바로 띄우기</small></button>
   </div>
-  <p>멘트를 띄운 뒤 화면을 한 번 톡 치면 메뉴가 나옵니다.<br>전체 화면 · 방향 바꾸기 · 멘트 수정 · GIF 저장 · ↩ 처음으로</p>
+  <p>멘트를 띄운 뒤 화면을 한 번 톡 치면 메뉴가 나옵니다.<br>전체 화면 · ↻ 화면 돌리기 · 화살표 방향 · 멘트 수정 · GIF 저장 · ↩ 처음으로</p>
 </div>
 
 <div id="editor">
@@ -279,7 +358,8 @@
 
 <div id="bar">
   <button id="bFull">⛶ 전체 화면</button>
-  <button id="bFlip">⇄ 방향 바꾸기</button>
+  <button id="bRot">↻ 화면 돌리기</button>
+  <button id="bFlip">⇄ 화살표 방향</button>
   <button id="bEdit">✏️ 멘트 수정</button>
   <button id="bGif">📥 GIF 저장</button>
   <button id="bBack">↩ 처음으로</button>
@@ -497,6 +577,31 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
   const bn=document.getElementById('inapp');bn.classList.add('on');
   document.getElementById('inappGo').onclick=go;
   document.getElementById('inappX').onclick=()=>bn.classList.remove('on');
+})();
+
+
+/* ---------- ↻ rotate the picket 90° without turning the device ---------- */
+(function(){
+  const rotor=document.createElement('div');rotor.id='rotor';
+  const st=document.getElementById('stage'), br=document.getElementById('bar');
+  st.parentNode.insertBefore(rotor,st);rotor.appendChild(st);rotor.appendChild(br);
+  let rot=0;try{rot=(parseInt(localStorage.getItem('picket_rot'),10)||0)%4;}catch(e){}
+  function apply(){
+    const W=innerWidth,H=innerHeight, side=rot%2===1;
+    document.body.classList.toggle('rot',rot!==0);
+    const pos=[[0,0],[W,0],[W,H],[0,H]][rot];
+    rotor.style.width=(side?H:W)+'px';rotor.style.height=(side?W:H)+'px';
+    rotor.style.left=pos[0]+'px';rotor.style.top=pos[1]+'px';
+    rotor.style.transform=rot?`rotate(${rot*90}deg)`:'';
+  }
+  apply();
+  addEventListener('resize',apply);addEventListener('orientationchange',()=>setTimeout(apply,300));
+  document.getElementById('bRot').onclick=e=>{
+    e.stopPropagation();rot=(rot+1)%4;try{localStorage.setItem('picket_rot',String(rot));}catch(err){}
+    apply();
+    if(current&&current.style==='party'){stopConfetti();confetti();}
+    showBar();
+  };
 })();
 
 /* ---------- open directly from #move #line #slow #welcome #custom ---------- */
