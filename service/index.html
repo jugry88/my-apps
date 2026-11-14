@@ -151,6 +151,12 @@
   .creditbox .crow button{border:0;background:#ebe4f7;color:#6a4fb3;border-radius:12px;padding:10px 12px;font-weight:900;font-size:15px}
   .creditbox .tin{border-color:#e4dbf3}
   .day .h.c{background:#6a4fb3}
+  .day .vdot{position:absolute;right:5px;bottom:5px;width:7px;height:7px;border-radius:50%;background:#e53935}
+  .sheet{touch-action:pan-y}
+  .sheet .grab{width:44px;height:5px;border-radius:99px;background:#d8d6de;margin:-8px auto 10px}
+  .sheet.dragging{transition:none!important;animation:none!important}
+  .sheet.back{transition:transform .2s ease-out}
+  .dvpick{font-size:13px!important;padding:9px 10px!important;color:#555!important}
   .day .cdot{position:absolute;left:5px;top:5px;width:6px;height:6px;border-radius:50%;background:#6a4fb3}
   .mrow .mbar{display:flex}
   .mrow .mbar div.cr{background:#9a86d0;border-radius:0 99px 99px 0}
@@ -197,6 +203,7 @@
   .tl .td{font-size:13px;font-weight:900}
   .tl .td small{font-weight:500;color:var(--sub);margin-left:6px}
   .tl .tn{font-size:14px;color:#4a4957;margin-top:2px;white-space:pre-wrap;word-break:break-word}
+  .tl.first .tn{background:#fff8e6;border-radius:10px;padding:6px 8px;margin-top:4px}
   .tl .tx{border:0;background:transparent;color:#b0aeb8;font-size:12px;position:absolute;right:0;top:4px}
   .visitbox{background:#faf9f6;border-radius:16px;padding:12px;margin:12px 0}
   .visitbox .row{display:flex;gap:8px;margin-bottom:8px}
@@ -302,15 +309,16 @@
     </div>
     <div class="dayvisits" id="dayVisits" hidden></div>
     <div class="linkbox">
-      <label class="lb">재방문·연구 기록 <span style="font-weight:400">(선택 · 재방문 탭에 자동으로 연결돼요)</span></label>
-      <select id="dvPerson"></select>
-      <div id="dvNew" hidden>
-        <div class="seg" id="dvType" style="margin:8px 0"><button data-v="rv" class="sel" style="flex:1">재방문</button><button data-v="st" style="flex:1">성서 연구</button></div>
-        <input type="text" id="dvName" class="tin" placeholder="이름 / 표시 (예: 김OO 할머니)">
+      <label class="lb">재방문·연구 기록 <span style="font-weight:400">(선택 · 적으면 재방문 탭에 자동으로 올라가요)</span></label>
+      <div id="dvNew">
+        <div class="seg" id="dvType" style="margin:4px 0 8px"><button data-v="rv" class="sel" style="flex:1">재방문</button><button data-v="st" style="flex:1">성서 연구</button></div>
         <input type="text" id="dvAddr" class="tin" placeholder="주소 (예: OO동 OO아파트 101동 302호)">
+        <input type="text" id="dvName" class="tin" placeholder="이름 / 표시 (선택 · 예: 김OO 할머니)">
       </div>
+      <div id="dvPrev" class="pmeta" hidden style="background:#fff8e6;border-radius:12px;padding:8px 10px;margin-top:8px;white-space:pre-wrap"></div>
       <textarea id="dvNote" placeholder="이번에 나눈 내용, 다음 약속 등" style="min-height:64px;margin-top:8px"></textarea>
-      <button class="btn light" id="dvAdd" style="width:100%;margin-top:8px">＋ 이 날짜로 방문 기록 추가</button>
+      <select id="dvPerson" class="dvpick" style="margin-top:8px"></select>
+      <button class="btn light" id="dvAdd" style="width:100%;margin-top:8px">＋ 방문 기록 추가</button>
     </div>
     <div class="actions">
       <button class="btn danger" id="dDel">지우기</button>
@@ -373,14 +381,14 @@
     <div class="ptop"><h3 id="pdName" style="flex:1"></h3><span class="badge" id="pdBadge"></span></div>
     <div class="sub" id="pdInfo"></div>
     <div class="pmeta" id="pdMemo" style="white-space:pre-wrap;margin:-6px 0 4px"></div>
+    <label class="lb" id="pdCount"></label>
+    <div class="timeline" id="pdTimeline"></div>
     <div class="visitbox">
       <label class="lb" id="pvLabel">방문 기록 추가</label>
       <div class="row field" style="margin-bottom:8px"><input type="date" id="pvDate"></div>
       <textarea id="pvNote" placeholder="이번에 나눈 내용, 다음 약속 등" style="min-height:70px"></textarea>
-      <div class="actions" style="margin-top:8px"><button class="btn main" id="pvAdd">＋ 기록 추가</button></div>
+      <div class="actions" style="margin-top:8px"><button class="btn main" id="pvAdd">＋ 방문 기록 추가</button></div>
     </div>
-    <label class="lb" id="pdCount"></label>
-    <div class="timeline" id="pdTimeline"></div>
     <div class="actions" style="margin-top:10px">
       <button class="btn light" id="pdEdit">정보 수정</button>
       <button class="btn main" id="pdClose" style="flex:1.6">닫기</button>
@@ -490,13 +498,14 @@ function render(){
 
   // calendar
   const g=document.getElementById('grid'); const first=new Date(vy,vm,1).getDay();
+  const vdays=new Set(); DB.people.forEach(p=>p.visits.forEach(v=>vdays.add(v.d)));
   let html=''; for(let i=0;i<first;i++) html+='<div class="day blank"></div>';
   for(let d=1;d<=dim;d++){
     const k=key(vy,vm,d), e=DB.entries[k], wd=(first+d-1)%7, dt=new Date(vy,vm,d);
     const cls=['day']; if(wd===0)cls.push('sun'); if(wd===6)cls.push('sat');
     const tot=e?(e.h||0)+(e.c||0):0;
     if(tot>0)cls.push('has'); if(dt.getTime()===today.getTime())cls.push('today'); if(dt>today)cls.push('future');
-    html+=`<button class="${cls.join(' ')}" data-k="${k}"><span class="n">${d}</span>${tot>0?`<span class="h${!(e.h>0)?' c':''}">${num(tot)}</span>`:''}${e&&e.c>0?'<span class="cdot" title="인정 시간 있음"></span>':''}${e&&e.memo?'<span class="memo" title="메모 있음"></span>':''}</button>`;
+    html+=`<button class="${cls.join(' ')}" data-k="${k}"><span class="n">${d}</span>${tot>0?`<span class="h${!(e.h>0)?' c':''}">${num(tot)}</span>`:''}${e&&e.c>0?'<span class="cdot" title="인정 시간 있음"></span>':''}${e&&e.memo?'<span class="memo" title="메모 있음"></span>':''}${vdays.has(k)?'<span class="vdot" title="재방문·연구 기록 있음"></span>':''}</button>`;
   }
   g.innerHTML=html;
   g.querySelectorAll('.day[data-k]').forEach(b=>b.onclick=()=>openDay(b.dataset.k));
@@ -569,29 +578,35 @@ document.querySelectorAll('#dvType button').forEach(b=>b.onclick=()=>setDvType(b
 function fillDvPerson(){
   const sel=document.getElementById('dvPerson');
   const ppl=[...DB.people].sort((a,b)=>{const la=lastVisit(a),lb=lastVisit(b);return (lb?lb.d:'').localeCompare(la?la.d:'');});
-  sel.innerHTML='<option value="">— 누구를 만났나요? (선택) —</option>'+ppl.map(p=>`<option value="${p.id}">${p.type==='st'?'📖':'🚪'} ${esc(p.name)} · ${p.visits.length}회</option>`).join('')+'<option value="__new">＋ 새로 등록하기</option>';
-  sel.value=''; document.getElementById('dvNew').hidden=true;
+  sel.innerHTML='<option value="">↩︎ 전에 만난 분이면 여기서 고르기 (선택)</option>'+ppl.map(p=>`<option value="${p.id}">${p.type==='st'?'📖':'🚪'} ${esc(p.name)} · ${p.visits.length}회 → ${p.visits.length+1}번째로 기록</option>`).join('');
+  sel.value=''; sel.hidden=!ppl.length; document.getElementById('dvNew').hidden=false; document.getElementById('dvPrev').hidden=true;
   document.getElementById('dvName').value=''; document.getElementById('dvAddr').value=''; setDvType('rv');
 }
-document.getElementById('dvPerson').onchange=e=>{document.getElementById('dvNew').hidden=e.target.value!=='__new';if(e.target.value==='__new')setTimeout(()=>document.getElementById('dvName').focus(),50);};
+document.getElementById('dvPerson').onchange=e=>{
+  const p=DB.people.find(x=>x.id===e.target.value), pv=document.getElementById('dvPrev');
+  document.getElementById('dvNew').hidden=!!p;
+  if(p){const last=p.visits.slice().sort((a,b)=>a.d.localeCompare(b.d)).pop();
+    pv.innerHTML=`<b>${esc(p.name)}</b>${p.addr&&p.addr!==p.name?' · 📍 '+esc(p.addr):''}${last?`<br><small>지난 기록 (${shortDate(last.d)})</small><br>${esc(last.note||'(내용 없음)')}`:''}`;pv.hidden=false;}
+  else pv.hidden=true;
+};
 // adds the visit typed in the day sheet; returns true if something was added
 function addDayVisit(quiet){
   const sel=document.getElementById('dvPerson').value, note=document.getElementById('dvNote').value.trim();
-  if(!sel) return false;
   let p;
-  if(sel==='__new'){
-    const name=document.getElementById('dvName').value.trim();
-    if(!name){if(!quiet)toast('이름이나 표시를 적어 주세요');return false;}
-    p={id:uid(),name,addr:document.getElementById('dvAddr').value.trim(),info:'',memo:'',type:dvType,created:curKey,visits:[]};
+  if(!sel){
+    const name=document.getElementById('dvName').value.trim(), addr=document.getElementById('dvAddr').value.trim();
+    if(!name&&!addr&&!note){if(!quiet)toast('주소나 나눈 내용을 적어 주세요');return false;}
+    const [,mm,dd]=curKey.split('-').map(Number);
+    p={id:uid(),name:name||addr||`${mm}/${dd} 만난 분`,addr,info:'',memo:'',type:dvType,created:curKey,visits:[]};
     DB.people.push(p);
   } else p=DB.people.find(x=>x.id===sel);
   if(!p) return false;
   p.visits.push({d:curKey,note}); save();
-  if(!quiet){toast(`${p.name} · ${p.visits.length}회째 기록했어요`);fillDvPerson();document.getElementById('dvNote').value='';showDayVisits(curKey);}
+  if(!quiet){toast(`${p.name} · ${p.visits.length}회째 기록했어요`);fillDvPerson();document.getElementById('dvNote').value='';document.getElementById('dvName').value='';document.getElementById('dvAddr').value='';showDayVisits(curKey);}
   renderPeople();
   return p;
 }
-document.getElementById('dvAdd').onclick=()=>{if(!document.getElementById('dvPerson').value){toast('누구를 만났는지 먼저 골라 주세요');return;}addDayVisit(false);};
+document.getElementById('dvAdd').onclick=()=>{if(addDayVisit(false))render();};
 let curC=0; const cin=document.getElementById('cinput');
 function setC(v,fromInput){curC=Math.max(0,Math.min(999,Math.round((+v||0)*2)/2));if(!fromInput)cin.value=num(curC);}
 cin.addEventListener('input',()=>{const v=parseFloat(cin.value);setC(isNaN(v)?0:v,true);});
@@ -699,6 +714,7 @@ async function renderAutoInfo(){
 document.getElementById('bExport').onclick=exportData;
 document.getElementById('bShareTxt').onclick=shareText;
 document.getElementById('bPaste').onclick=()=>{document.getElementById('pasteTa').value='';document.getElementById('pasteDim').classList.add('on');};
+document.getElementById('pasteDim').onclick=e=>{if(e.target.id==='pasteDim')e.target.classList.remove('on');};
 document.getElementById('pasteCancel').onclick=()=>document.getElementById('pasteDim').classList.remove('on');
 document.getElementById('pasteOk').onclick=async()=>{let d;try{d=parseBackup(document.getElementById('pasteTa').value);}catch(e){toast('백업 글을 읽지 못했어요. 전체를 복사했는지 확인해 주세요');return;}
   if(await restoreFrom(d,true))document.getElementById('pasteDim').classList.remove('on');};
@@ -797,13 +813,13 @@ function openPerson(id){
   const bd=document.getElementById('pdBadge');bd.className='badge '+p.type;bd.textContent=TYPE[p.type];
   document.getElementById('pdInfo').innerHTML=(p.addr?`📍 ${esc(p.addr)} <a class="maplink" href="https://map.naver.com/p/search/${encodeURIComponent(p.addr)}" target="_blank" rel="noopener">지도</a>`:'')+(p.info?`${p.addr?'<br>':''}☎ ${esc(p.info)}`:'')||' ';
   document.getElementById('pdMemo').textContent=p.memo||'';
-  document.getElementById('pvLabel').textContent=p.visits.length?`${p.visits.length+1}번째 ${p.type==='st'?'연구':'재방문'} 기록하기`:`첫 ${p.type==='st'?'연구':'방문'} 기록하기`;
+  document.getElementById('pvLabel').textContent=`방문 기록 추가 (${p.visits.length+1}회차)`;
   document.getElementById('pvDate').value=todayKey();
   document.getElementById('pvNote').value='';
-  document.getElementById('pdCount').textContent=p.visits.length?`지금까지 ${p.visits.length}회`:'아직 기록이 없어요';
-  const vs=p.visits.map((v,i)=>({...v,i})).sort((a,b)=>b.d.localeCompare(a.d)||b.i-a.i);
-  const n=p.visits.length;
-  document.getElementById('pdTimeline').innerHTML=vs.map((v,idx)=>`<div class="tl ${p.type}"><div class="td">${n-idx}회차 · ${shortDate(v.d)}<small>${daysAgo(v.d)}</small></div>${v.note?`<div class="tn">${esc(v.note)}</div>`:''}<button class="tx" data-i="${v.i}" aria-label="이 기록 지우기">지우기</button></div>`).join('');
+  document.getElementById('pdCount').textContent=p.visits.length?`지난 기록 · ${p.visits.length}회 (처음부터 순서대로)`:'아직 기록이 없어요';
+  // 첫 방문부터 순서대로 보여 줘서, 지난 내용을 읽고 다음 기록을 이어서 적을 수 있게
+  const vs=p.visits.map((v,i)=>({...v,i})).sort((a,b)=>a.d.localeCompare(b.d)||a.i-b.i);
+  document.getElementById('pdTimeline').innerHTML=vs.map((v,idx)=>`<div class="tl ${p.type}${idx===0?' first':''}"><div class="td">${idx+1}회차${idx===0?' (첫 방문)':''} · ${shortDate(v.d)}<small>${daysAgo(v.d)}</small></div><div class="tn">${v.note?esc(v.note):'<span style="color:#aaa">(적은 내용 없음)</span>'}</div><button class="tx" data-i="${v.i}" aria-label="이 기록 지우기">지우기</button></div>`).join('');
   document.querySelectorAll('#pdTimeline .tx').forEach(b=>b.onclick=()=>{if(!confirm('이 방문 기록을 지울까요?'))return;p.visits.splice(+b.dataset.i,1);save();openPerson(id);renderPeople();});
   document.getElementById('pDim').classList.add('on');
 }
@@ -817,6 +833,29 @@ document.getElementById('pvAdd').onclick=()=>{
   p.visits.push({d,note});save();openPerson(curPid);renderPeople();
   toast(`${p.visits.length}회째 기록했어요`);
 };
+
+/* ---------------- 시트를 아래로 쓸어내려 닫기 ---------------- */
+document.querySelectorAll('.dim > .sheet').forEach(sh=>{
+  if(!sh.querySelector('.grab')){const g=document.createElement('div');g.className='grab';sh.prepend(g);}
+  let y0=null,dy=0,t0=0;
+  sh.addEventListener('touchstart',e=>{
+    if(e.touches.length!==1)return;
+    const tg=e.target, onGrab=tg.classList&&tg.classList.contains('grab');
+    if(!onGrab&&(sh.scrollTop>0||tg.closest('textarea,select,input[type=range],.snaps,.timeline')))return;
+    y0=e.touches[0].clientY;dy=0;t0=Date.now();
+  },{passive:true});
+  sh.addEventListener('touchmove',e=>{
+    if(y0===null)return;dy=e.touches[0].clientY-y0;
+    if(dy<=0){sh.style.transform='';return;}
+    if(dy>8){sh.classList.add('dragging');sh.style.transform=`translateY(${dy}px)`;if(e.cancelable)e.preventDefault();}
+  },{passive:false});
+  sh.addEventListener('touchend',()=>{
+    if(y0===null)return;const fast=dy>40&&Date.now()-t0<250;y0=null;sh.classList.remove('dragging');
+    if(dy>110||fast){sh.style.transform='';const dim=sh.parentElement;dim.dispatchEvent(new MouseEvent('click',{bubbles:true}));}
+    else{sh.classList.add('back');sh.style.transform='';setTimeout(()=>sh.classList.remove('back'),220);}
+    dy=0;
+  });
+});
 
 /* ---------------- offline support ---------------- */
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{});}
