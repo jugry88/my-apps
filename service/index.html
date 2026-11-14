@@ -102,6 +102,7 @@
   /* sheet */
   .dim{position:fixed;inset:0;background:rgba(30,30,40,.4);display:none;z-index:20;align-items:flex-end;justify-content:center}
   .dim.on{display:flex}
+  #pEditDim{z-index:25} /* edit opens on top of the person sheet */
   .sheet{background:#fff;width:100%;max-width:560px;border-radius:24px 24px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom));max-height:92vh;overflow:auto;animation:up .22s ease-out}
   @keyframes up{from{transform:translateY(30px);opacity:.6}to{transform:none;opacity:1}}
   @media (min-width:700px){.dim{align-items:center}.sheet{border-radius:24px}}
@@ -128,6 +129,61 @@
   .seg{display:flex;background:#efeee8;border-radius:12px;padding:3px}
   .seg button{border:0;background:transparent;border-radius:9px;padding:7px 10px;font-size:13px;font-weight:700;color:var(--sub)}
   .seg button.sel{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+  /* tabs */
+  .tabs{display:flex;background:#ecebe5;border-radius:14px;padding:4px;gap:4px;position:sticky;top:calc(6px + env(safe-area-inset-top));z-index:5}
+  .tabs button{flex:1;border:0;background:transparent;border-radius:11px;padding:10px 6px;font-size:15px;font-weight:700;color:var(--sub)}
+  .tabs button.sel{background:#fff;color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+  .pane{display:flex;flex-direction:column;gap:14px}
+  .pane[hidden]{display:none}
+
+  /* direct hour input */
+  .hv input{width:150px;border:0;border-bottom:2px dashed #d6d4cc;background:transparent;font:inherit;font-size:40px;font-weight:900;text-align:center;color:var(--ink);padding:0 0 2px;-moz-appearance:textfield}
+  .hv input::-webkit-outer-spin-button,.hv input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .hv input:focus{outline:none;border-bottom-color:var(--main)}
+  .addrow{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:2px 0 8px}
+  .addrow button{border:0;border-radius:14px;padding:12px 0;font-size:17px;font-weight:900;background:var(--soft);color:var(--main)}
+  .addrow button:active{background:#d3e9e1;transform:scale(.97)}
+  .subrow{display:flex;justify-content:center;gap:8px;margin-bottom:14px}
+  .subrow button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 14px;font-size:13px;font-weight:700;color:var(--sub)}
+  .dayvisits{background:#faf9f6;border-radius:14px;padding:10px 12px;margin-top:12px;font-size:13px;line-height:1.7}
+  .dayvisits b{font-size:12px;color:var(--sub)}
+
+  /* people */
+  .pstats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+  .pstat{background:#faf9f6;border-radius:14px;padding:12px;text-align:center}
+  .pstat b{display:block;font-size:22px;font-weight:900}
+  .pstat small{font-size:12px;color:var(--sub)}
+  .pstat.rv b{color:var(--main)} .pstat.st b{color:#6a4fb3}
+  .ptools{display:flex;gap:8px;align-items:center}
+  .ptools .seg{flex:1}
+  .ptools .seg button{flex:1}
+  .addp{border:0;background:var(--main);color:#fff;border-radius:12px;padding:10px 14px;font-weight:900;font-size:14px;white-space:nowrap}
+  .plist{display:flex;flex-direction:column;gap:10px}
+  .pcard{display:block;width:100%;text-align:left;background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px;box-shadow:0 2px 8px rgba(0,0,0,.03)}
+  .pcard:active{transform:scale(.99)}
+  .ptop{display:flex;align-items:center;gap:8px}
+  .pname{font-size:17px;font-weight:900;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .badge{font-size:11px;font-weight:900;border-radius:999px;padding:3px 8px;white-space:nowrap}
+  .badge.rv{background:var(--soft);color:var(--main)} .badge.st{background:#eee8f8;color:#6a4fb3}
+  .pcount{font-size:13px;font-weight:900;white-space:nowrap}
+  .pmeta{font-size:12px;color:var(--sub);margin-top:6px}
+  .plast{font-size:13px;margin-top:4px;color:#4a4957;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .pempty{text-align:center;color:var(--sub);font-size:14px;line-height:1.7;padding:26px 10px}
+  .field{margin-bottom:10px}
+  .field input[type=text],.field input[type=date]{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:11px 12px;font:inherit;font-size:15px;background:#fbfaf7;color:var(--ink)}
+  .field input:focus{outline:none;border-color:var(--main);background:#fff}
+  .timeline{margin-top:6px;display:flex;flex-direction:column;gap:0;border-left:2px solid var(--line);margin-left:8px}
+  .tl{position:relative;padding:4px 0 12px 16px}
+  .tl::before{content:"";position:absolute;left:-7px;top:9px;width:12px;height:12px;border-radius:50%;background:#fff;border:3px solid var(--main)}
+  .tl.st::before{border-color:#6a4fb3}
+  .tl .td{font-size:13px;font-weight:900}
+  .tl .td small{font-weight:500;color:var(--sub);margin-left:6px}
+  .tl .tn{font-size:14px;color:#4a4957;margin-top:2px;white-space:pre-wrap;word-break:break-word}
+  .tl .tx{border:0;background:transparent;color:#b0aeb8;font-size:12px;position:absolute;right:0;top:4px}
+  .visitbox{background:#faf9f6;border-radius:16px;padding:12px;margin:12px 0}
+  .visitbox .row{display:flex;gap:8px;margin-bottom:8px}
+  .visitbox .row input{flex:1}
+  .linkbtn2{border:0;background:transparent;color:var(--sub);font-size:13px;text-decoration:underline;padding:6px}
   .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translate(-50%,20px);background:#24232f;color:#fff;padding:11px 18px;border-radius:999px;font-size:14px;font-weight:700;opacity:0;transition:.25s;z-index:40;pointer-events:none;white-space:nowrap}
   .toast.on{opacity:1;transform:translate(-50%,0)}
   .tip{font-size:12px;color:var(--sub);text-align:center;line-height:1.6}
@@ -146,8 +202,11 @@
     </div>
   </header>
 
+  <nav class="tabs" id="tabs"><button data-t="home" class="sel">🏠 시간 기록</button><button data-t="people">📒 재방문·연구</button></nav>
+
   <div class="backup-warn" id="backupWarn">기록은 이 기기에만 저장돼요. 가끔 백업해 두세요.<button id="backupNow">지금 백업</button></div>
 
+  <div class="pane" id="paneHome">
   <section class="card">
     <div class="mnav">
       <button class="navbtn" id="prev" aria-label="이전 달">‹</button>
@@ -176,21 +235,36 @@
   </section>
 
   <p class="tip">날짜를 누르면 시간과 메모를 기록할 수 있어요 · 주황 점은 메모가 있는 날<br>기록은 이 기기에 저장돼요 · ⚙️ 설정에서 백업할 수 있어요</p>
+  </div>
+
+  <div class="pane" id="panePeople" hidden>
+    <section class="card">
+      <div class="pstats" id="pstats"></div>
+    </section>
+    <div class="ptools">
+      <div class="seg" id="pfilter"><button data-f="all" class="sel">전체</button><button data-f="rv">재방문</button><button data-f="st">성서 연구</button></div>
+      <button class="addp" id="addPerson">＋ 새로 추가</button>
+    </div>
+    <div class="plist" id="plist"></div>
+    <p class="tip">사람을 누르면 방문 기록을 이어서 남길 수 있어요<br>재방문하던 분이 성서 연구를 시작하면 종류만 바꾸면 돼요</p>
+  </div>
 </div>
 
 <!-- day sheet -->
 <div class="dim" id="dayDim">
   <div class="sheet">
     <h3 id="dTitle"></h3>
-    <div class="sub" id="dSub">30분 단위로 기록해요</div>
+    <div class="sub" id="dSub">숫자를 눌러 직접 입력하거나, 아래 버튼을 누를 때마다 더해져요</div>
     <div class="stepper">
       <button id="minus" aria-label="30분 빼기">−</button>
-      <div class="hv"><b id="hval">0</b><small id="hmin">0분</small></div>
+      <div class="hv"><input id="hinput" type="number" inputmode="decimal" step="0.5" min="0" max="24" value="0" aria-label="봉사 시간"><small id="hmin">0시간</small></div>
       <button id="plus" aria-label="30분 더하기">+</button>
     </div>
-    <div class="quick" id="quick"></div>
+    <div class="addrow" id="addrow"><button data-a="0.5">+0.5</button><button data-a="1">+1</button><button data-a="5">+5</button><button data-a="10">+10</button></div>
+    <div class="subrow"><button id="hzero">0으로 되돌리기</button></div>
     <label class="lb" for="memo">메모 <span style="font-weight:400">(선택)</span></label>
-    <textarea id="memo" placeholder="예) 호별 방문, 재방문 2건, 전시대"></textarea>
+    <textarea id="memo" placeholder="예) 호별 방문, 전시대"></textarea>
+    <div class="dayvisits" id="dayVisits" hidden></div>
     <div class="actions">
       <button class="btn danger" id="dDel">지우기</button>
       <button class="btn light" id="dCancel">취소</button>
@@ -221,13 +295,52 @@
   </div>
 </div>
 
+<!-- person edit sheet -->
+<div class="dim" id="pEditDim">
+  <div class="sheet">
+    <h3 id="peTitle">새로 추가</h3>
+    <div class="sub">이름은 나만 알아볼 수 있게 적어도 돼요</div>
+    <div class="field"><label class="lb">종류</label>
+      <div class="seg" id="peType"><button data-v="rv" class="sel" style="flex:1">재방문</button><button data-v="st" style="flex:1">성서 연구</button></div></div>
+    <div class="field"><label class="lb" for="peName">이름 / 표시</label><input type="text" id="peName" placeholder="예) 김OO 할머니, 302호"></div>
+    <div class="field"><label class="lb" for="peInfo">주소·연락처 <span style="font-weight:400">(선택)</span></label><input type="text" id="peInfo" placeholder="예) OO아파트 101동, 화요일 오후"></div>
+    <div class="field"><label class="lb" for="peMemo">메모 <span style="font-weight:400">(선택)</span></label><textarea id="peMemo" placeholder="관심사, 다음에 나눌 내용 등"></textarea></div>
+    <div class="actions">
+      <button class="btn danger" id="peDel">삭제</button>
+      <button class="btn light" id="peCancel">취소</button>
+      <button class="btn main" id="peSave" style="flex:1.6">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- person detail sheet -->
+<div class="dim" id="pDim">
+  <div class="sheet">
+    <div class="ptop"><h3 id="pdName" style="flex:1"></h3><span class="badge" id="pdBadge"></span></div>
+    <div class="sub" id="pdInfo"></div>
+    <div class="pmeta" id="pdMemo" style="white-space:pre-wrap;margin:-6px 0 4px"></div>
+    <div class="visitbox">
+      <label class="lb" id="pvLabel">방문 기록 추가</label>
+      <div class="row field" style="margin-bottom:8px"><input type="date" id="pvDate"></div>
+      <textarea id="pvNote" placeholder="이번에 나눈 내용, 다음 약속 등" style="min-height:70px"></textarea>
+      <div class="actions" style="margin-top:8px"><button class="btn main" id="pvAdd">＋ 기록 추가</button></div>
+    </div>
+    <label class="lb" id="pdCount"></label>
+    <div class="timeline" id="pdTimeline"></div>
+    <div class="actions" style="margin-top:10px">
+      <button class="btn light" id="pdEdit">정보 수정</button>
+      <button class="btn main" id="pdClose" style="flex:1.6">닫기</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
 /* ---------------- storage ---------------- */
 const KEY='serviceReport.v1';
-const DEF={entries:{},settings:{month:50,year:600},lastBackup:0};
-function load(){try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&d.entries)return {...DEF,...d,settings:{...DEF.settings,...(d.settings||{})}};}catch(e){}return JSON.parse(JSON.stringify(DEF));}
+const DEF={entries:{},people:[],settings:{month:50,year:600},lastBackup:0};
+function load(){try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&d.entries)return {...DEF,...d,people:Array.isArray(d.people)?d.people:[],settings:{...DEF.settings,...(d.settings||{})}};}catch(e){}return JSON.parse(JSON.stringify(DEF));}
 let DB=load();
 function save(){try{localStorage.setItem(KEY,JSON.stringify(DB));}catch(e){toast('저장하지 못했어요. 저장 공간을 확인해 주세요.');}}
 // ask the browser to keep this data (helps against automatic clean-up)
@@ -319,24 +432,32 @@ function render(){
 
 /* ---------------- day sheet ---------------- */
 let curKey=null, curH=0;
-const quickVals=[0.5,1,1.5,2,2.5,3,4,5];
-function setH(h){curH=Math.max(0,Math.min(24,Math.round(h*2)/2));document.getElementById('hval').textContent=num(curH);document.getElementById('hmin').textContent=fmtH(curH);
-  document.querySelectorAll('#quick button').forEach(b=>b.classList.toggle('sel',+b.dataset.v===curH));}
-document.getElementById('quick').innerHTML=quickVals.map(v=>`<button data-v="${v}">${num(v)}시간</button>`).join('');
-document.querySelectorAll('#quick button').forEach(b=>b.onclick=()=>setH(+b.dataset.v));
+const hin=document.getElementById('hinput');
+function setH(h,fromInput){curH=Math.max(0,Math.min(24,Math.round((+h||0)*2)/2));
+  if(!fromInput) hin.value=num(curH);
+  document.getElementById('hmin').textContent=fmtH(curH);}
+hin.addEventListener('input',()=>{const v=parseFloat(hin.value);setH(isNaN(v)?0:v,true);});
+hin.addEventListener('blur',()=>{hin.value=num(curH);});
+hin.addEventListener('focus',()=>{setTimeout(()=>hin.select(),0);});
+document.querySelectorAll('#addrow button').forEach(b=>b.onclick=()=>{hin.blur();setH(curH+(+b.dataset.a));});
+document.getElementById('hzero').onclick=()=>setH(0);
 function openDay(k){
   curKey=k; const [y,m,d]=k.split('-').map(Number); const wd='일월화수목금토'[new Date(y,m-1,d).getDay()];
   document.getElementById('dTitle').textContent=`${m}월 ${d}일 (${wd})`;
   const e=DB.entries[k]||{h:0,memo:''};
   setH(e.h||0); document.getElementById('memo').value=e.memo||'';
+  const vs=visitsOn(k), dv=document.getElementById('dayVisits');
+  dv.hidden=!vs.length;
+  dv.innerHTML=vs.length?'<b>이날 재방문·연구</b><br>'+vs.map(v=>`${v.p.type==='st'?'📖':'🚪'} ${esc(v.p.name)}${v.note?' — '+esc(v.note.split('\n')[0]).slice(0,40):''}`).join('<br>'):'';
   document.getElementById('dDel').style.display=DB.entries[k]?'':'none';
   document.getElementById('dayDim').classList.add('on');
 }
 function closeDay(){document.getElementById('dayDim').classList.remove('on');curKey=null;}
-document.getElementById('minus').onclick=()=>setH(curH-0.5);
-document.getElementById('plus').onclick=()=>setH(curH+0.5);
+document.getElementById('minus').onclick=()=>{hin.blur();setH(curH-0.5);};
+document.getElementById('plus').onclick=()=>{hin.blur();setH(curH+0.5);};
 document.getElementById('dCancel').onclick=closeDay;
 document.getElementById('dSave').onclick=()=>{
+  {const v=parseFloat(hin.value);if(!isNaN(v))setH(v);}
   const memo=document.getElementById('memo').value.trim();
   if(curH===0&&!memo) delete DB.entries[curKey]; else DB.entries[curKey]={h:curH,memo};
   save(); closeDay(); render(); toast('저장했어요');
@@ -355,8 +476,10 @@ document.getElementById('next').onclick=()=>{vm++;if(vm>11){vm=0;vy++;}render();
 /* ---------------- report copy ---------------- */
 document.getElementById('btnReport').onclick=async()=>{
   const t=monthTotal(vy,vm);
-  const txt=`${vy}년 ${vm+1}월 봉사 보고\n시간: ${num(t)}시간`;
-  try{await navigator.clipboard.writeText(txt);toast(`복사했어요: ${vm+1}월 ${num(t)}시간`);}
+  const pre=`${vy}-${pad(vm+1)}-`;
+  const studies=DB.people.filter(p=>p.type==='st'&&p.visits.some(v=>v.d.startsWith(pre))).length;
+  const txt=`${vy}년 ${vm+1}월 봉사 보고\n시간: ${num(t)}시간\n성서 연구: ${studies}`;
+  try{await navigator.clipboard.writeText(txt);toast(`복사했어요: ${num(t)}시간 · 연구 ${studies}`);}
   catch(e){prompt('아래 문구를 복사하세요',txt);}
 };
 
@@ -389,20 +512,122 @@ document.getElementById('fileIn').onchange=async e=>{
   const f=e.target.files[0];if(!f)return;
   try{const d=JSON.parse(await f.text());if(!d||typeof d.entries!=='object')throw 0;
     const n=Object.keys(d.entries).length;
-    if(!confirm(`백업에 있는 ${n}일치 기록으로 바꿀까요?\n지금 이 기기의 기록은 백업 내용으로 바뀌어요.`))return;
-    DB={...DEF,...d,settings:{...DEF.settings,...(d.settings||{})}};save();render();toast('백업을 불러왔어요');
+    if(!confirm(`백업에 있는 ${n}일치 시간 기록과 ${(d.people||[]).length}명의 재방문·연구 기록으로 바꿀까요?\n지금 이 기기의 기록은 백업 내용으로 바뀌어요.`))return;
+    DB={...DEF,...d,people:Array.isArray(d.people)?d.people:[],settings:{...DEF.settings,...(d.settings||{})}};save();render();renderPeople();toast('백업을 불러왔어요');
   }catch(err){toast('백업 파일을 읽지 못했어요');}
   e.target.value='';
 };
 document.getElementById('bReset').onclick=()=>{
-  if(!confirm('모든 봉사 기록을 지울까요?\n되돌릴 수 없어요. 먼저 백업을 권해요.'))return;
-  DB.entries={};save();render();toast('모든 기록을 지웠어요');
+  if(!confirm('모든 봉사 기록(시간, 재방문·연구)을 지울까요?\n되돌릴 수 없어요. 먼저 백업을 권해요.'))return;
+  DB.entries={};DB.people=[];save();render();renderPeople();toast('모든 기록을 지웠어요');
+};
+
+/* ---------------- tabs ---------------- */
+function showTab(t){
+  document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('sel',b.dataset.t===t));
+  document.getElementById('paneHome').hidden=t!=='home';
+  document.getElementById('panePeople').hidden=t!=='people';
+  try{sessionStorage.setItem('svcTab',t);}catch(e){}
+  if(t==='people')renderPeople();
+  window.scrollTo({top:0});
+}
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>showTab(b.dataset.t));
+
+/* ---------------- 재방문 · 성서 연구 ---------------- */
+const esc=s=>String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const todayKey=()=>key(today.getFullYear(),today.getMonth(),today.getDate());
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const TYPE={rv:'재방문',st:'성서 연구'};
+let pFilter='all', curPid=null, editPid=null, peType='rv';
+function lastVisit(p){return p.visits.length?p.visits.reduce((a,b)=>a.d>=b.d?a:b):null;}
+function daysAgo(d){const [y,m,dd]=d.split('-').map(Number);const n=Math.round((today-new Date(y,m-1,dd))/864e5);return n===0?'오늘':n===1?'어제':n>0?`${n}일 전`:`${-n}일 후`;}
+function shortDate(d){const [y,m,dd]=d.split('-').map(Number);return `${y!==today.getFullYear()?y+'. ':''}${m}/${dd}`;}
+function visitsOn(k){const out=[];DB.people.forEach(p=>p.visits.forEach(v=>{if(v.d===k)out.push({p,note:v.note});}));return out;}
+
+function renderPeople(){
+  const pre=`${today.getFullYear()}-${pad(today.getMonth()+1)}-`;
+  const rv=DB.people.filter(p=>p.type==='rv'), st=DB.people.filter(p=>p.type==='st');
+  const rvM=DB.people.reduce((n,p)=>n+(p.type==='rv'?p.visits.filter(v=>v.d.startsWith(pre)).length:0),0);
+  const stM=st.filter(p=>p.visits.some(v=>v.d.startsWith(pre))).length;
+  document.getElementById('pstats').innerHTML=
+    `<div class="pstat rv"><b>${rv.length}명</b><small>재방문 대상 · 이번 달 ${rvM}회 방문</small></div>`+
+    `<div class="pstat st"><b>${st.length}명</b><small>성서 연구생 · 이번 달 ${stM}명 연구</small></div>`;
+  let list=DB.people.filter(p=>pFilter==='all'||p.type===pFilter);
+  list.sort((a,b)=>{const la=lastVisit(a),lb=lastVisit(b);return (lb?lb.d:b.created||'').localeCompare(la?la.d:a.created||'');});
+  const el=document.getElementById('plist');
+  if(!list.length){el.innerHTML=`<div class="pempty">${DB.people.length?'이 종류의 기록이 아직 없어요':'아직 기록이 없어요<br><b>＋ 새로 추가</b>로 재방문할 분이나 성서 연구생을 등록하세요'}</div>`;return;}
+  el.innerHTML=list.map(p=>{const lv=lastVisit(p);
+    return `<button class="pcard" data-id="${p.id}"><div class="ptop"><span class="pname">${esc(p.name)}</span><span class="badge ${p.type}">${TYPE[p.type]}</span><span class="pcount">${p.visits.length}회</span></div>`+
+      `<div class="pmeta">${lv?`마지막 방문 ${shortDate(lv.d)} (${daysAgo(lv.d)})`:'아직 방문 기록 없음'}${p.info?' · '+esc(p.info):''}</div>`+
+      (lv&&lv.note?`<div class="plast">“${esc(lv.note.split('\n')[0])}”</div>`:'')+`</button>`;}).join('');
+  el.querySelectorAll('.pcard').forEach(b=>b.onclick=()=>openPerson(b.dataset.id));
+}
+document.querySelectorAll('#pfilter button').forEach(b=>b.onclick=()=>{pFilter=b.dataset.f;document.querySelectorAll('#pfilter button').forEach(x=>x.classList.toggle('sel',x===b));renderPeople();});
+
+// add / edit person
+function setPeType(t){peType=t;document.querySelectorAll('#peType button').forEach(b=>b.classList.toggle('sel',b.dataset.v===t));}
+document.querySelectorAll('#peType button').forEach(b=>b.onclick=()=>setPeType(b.dataset.v));
+function openEdit(id){
+  editPid=id||null; const p=id?DB.people.find(x=>x.id===id):null;
+  document.getElementById('peTitle').textContent=p?'정보 수정':'새로 추가';
+  setPeType(p?p.type:(pFilter==='st'?'st':'rv'));
+  document.getElementById('peName').value=p?p.name:'';
+  document.getElementById('peInfo').value=p?p.info||'':'';
+  document.getElementById('peMemo').value=p?p.memo||'':'';
+  document.getElementById('peDel').style.display=p?'':'none';
+  document.getElementById('pEditDim').classList.add('on');
+  if(!p)setTimeout(()=>document.getElementById('peName').focus(),120);
+}
+function closeEdit(){document.getElementById('pEditDim').classList.remove('on');}
+document.getElementById('addPerson').onclick=()=>openEdit(null);
+document.getElementById('peCancel').onclick=closeEdit;
+document.getElementById('pEditDim').onclick=e=>{if(e.target.id==='pEditDim')closeEdit();};
+document.getElementById('peSave').onclick=()=>{
+  const name=document.getElementById('peName').value.trim();
+  if(!name){toast('이름이나 표시를 적어 주세요');return;}
+  const info=document.getElementById('peInfo').value.trim(), memo=document.getElementById('peMemo').value.trim();
+  if(editPid){const p=DB.people.find(x=>x.id===editPid);const changed=p.type!==peType;Object.assign(p,{name,info,memo,type:peType});save();closeEdit();renderPeople();if(curPid)openPerson(curPid);toast(changed?`${TYPE[peType]}(으)로 바꿨어요`:'저장했어요');}
+  else{const p={id:uid(),name,info,memo,type:peType,created:todayKey(),visits:[]};DB.people.push(p);save();closeEdit();renderPeople();openPerson(p.id);toast('추가했어요');}
+};
+document.getElementById('peDel').onclick=()=>{
+  const p=DB.people.find(x=>x.id===editPid);if(!p)return;
+  if(!confirm(`'${p.name}'과(와) 방문 기록 ${p.visits.length}개를 지울까요?`))return;
+  DB.people=DB.people.filter(x=>x.id!==editPid);save();closeEdit();closePerson();renderPeople();toast('지웠어요');
+};
+
+// person detail + visits
+function openPerson(id){
+  const p=DB.people.find(x=>x.id===id); if(!p)return; curPid=id;
+  document.getElementById('pdName').textContent=p.name;
+  const bd=document.getElementById('pdBadge');bd.className='badge '+p.type;bd.textContent=TYPE[p.type];
+  document.getElementById('pdInfo').textContent=p.info||' ';
+  document.getElementById('pdMemo').textContent=p.memo||'';
+  document.getElementById('pvLabel').textContent=p.visits.length?`${p.visits.length+1}번째 ${p.type==='st'?'연구':'재방문'} 기록하기`:`첫 ${p.type==='st'?'연구':'방문'} 기록하기`;
+  document.getElementById('pvDate').value=todayKey();
+  document.getElementById('pvNote').value='';
+  document.getElementById('pdCount').textContent=p.visits.length?`지금까지 ${p.visits.length}회`:'아직 기록이 없어요';
+  const vs=p.visits.map((v,i)=>({...v,i})).sort((a,b)=>b.d.localeCompare(a.d)||b.i-a.i);
+  const n=p.visits.length;
+  document.getElementById('pdTimeline').innerHTML=vs.map((v,idx)=>`<div class="tl ${p.type}"><div class="td">${n-idx}회차 · ${shortDate(v.d)}<small>${daysAgo(v.d)}</small></div>${v.note?`<div class="tn">${esc(v.note)}</div>`:''}<button class="tx" data-i="${v.i}" aria-label="이 기록 지우기">지우기</button></div>`).join('');
+  document.querySelectorAll('#pdTimeline .tx').forEach(b=>b.onclick=()=>{if(!confirm('이 방문 기록을 지울까요?'))return;p.visits.splice(+b.dataset.i,1);save();openPerson(id);renderPeople();});
+  document.getElementById('pDim').classList.add('on');
+}
+function closePerson(){document.getElementById('pDim').classList.remove('on');curPid=null;}
+document.getElementById('pdClose').onclick=closePerson;
+document.getElementById('pDim').onclick=e=>{if(e.target.id==='pDim')closePerson();};
+document.getElementById('pdEdit').onclick=()=>openEdit(curPid);
+document.getElementById('pvAdd').onclick=()=>{
+  const p=DB.people.find(x=>x.id===curPid);if(!p)return;
+  const d=document.getElementById('pvDate').value||todayKey(), note=document.getElementById('pvNote').value.trim();
+  p.visits.push({d,note});save();openPerson(curPid);renderPeople();
+  toast(`${p.visits.length}회째 기록했어요`);
 };
 
 /* ---------------- offline support ---------------- */
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{});}
 
 render();
+try{if(sessionStorage.getItem('svcTab')==='people')showTab('people');}catch(e){}
 </script>
 </body>
 </html>
