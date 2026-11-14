@@ -520,7 +520,7 @@ function render(){
   document.getElementById('ybarWrap').classList.toggle('done',yt>=S.year);
   // pace: months finished in this goal year (current month counts in progress)
   let monthsDone;
-  if(curIdx>=0) monthsDone=curIdx; else monthsDone=(new Date(sy,sm,1)>today)?0:12;
+  if(curIdx>=0) monthsDone=curIdx+1; else monthsDone=(new Date(sy,sm,1)>today)?0:12; // 이번 달까지 포함 (11월 = 3개월차 → 150시간)
   const expected=S.month*monthsDone;
   const diff=yt-expected;
   const remainMonths=curIdx>=0?12-curIdx:(monthsDone===12?0:12);
