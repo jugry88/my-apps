@@ -8,8 +8,11 @@
 my-apps/
 ├─ index.html      ← 앱 모음 첫 화면 (앱 목록)
 ├─ README.md       ← 지금 이 파일
-└─ picket/         ← 앱 1: 모션 피켓
-   ├─ index.html
+├─ picket/         ← 앱 1: 모션 피켓
+│  ├─ index.html
+│  └─ README.md
+└─ service/        ← 앱 2: 봉사 보고
+   ├─ index.html, sw.js, manifest.webmanifest, 아이콘
    └─ README.md
 ```
 
@@ -21,8 +24,9 @@ my-apps/
 
 | 앱 | 주소 | 넷리파이 설정 |
 |---|---|---|
-| 앱 모음 첫 화면 | (넷리파이 연결 후 기입) | 기본 폴더: (비움) |
+| 앱 모음 첫 화면 | https://jugry88-apps.netlify.app | 기본 폴더: (비움) |
 | 모션 피켓 | https://motion-picket.netlify.app | 기본 폴더: `picket` |
+| 봉사 보고 | https://jugry88-apps.netlify.app/service/ | (앱 모음 사이트 안) |
 
 ## 수정 방법
 
