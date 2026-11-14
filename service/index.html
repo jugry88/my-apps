@@ -145,6 +145,12 @@
   .addrow button:active{background:#d3e9e1;transform:scale(.97)}
   .subrow{display:flex;justify-content:center;gap:8px;margin-bottom:14px}
   .subrow button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 14px;font-size:13px;font-weight:700;color:var(--sub)}
+  .linkbox{background:#f4f8f6;border:1px solid #d9ebe5;border-radius:16px;padding:12px;margin-top:12px}
+  .linkbox select,.tin{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:11px 12px;font:inherit;font-size:15px;background:#fff;color:var(--ink);margin-top:2px}
+  .tin{margin-top:8px}
+  .linkbox select:focus,.tin:focus{outline:none;border-color:var(--main)}
+  .linkbox textarea{background:#fff}
+  .maplink{display:inline-block;margin-left:6px;font-size:12px;font-weight:700;color:var(--main);text-decoration:none;border:1px solid #cfe5de;border-radius:999px;padding:2px 8px;background:var(--soft)}
   .dayvisits{background:#faf9f6;border-radius:14px;padding:10px 12px;margin-top:12px;font-size:13px;line-height:1.7}
   .dayvisits b{font-size:12px;color:var(--sub)}
 
@@ -254,10 +260,10 @@
 <div class="dim" id="dayDim">
   <div class="sheet">
     <h3 id="dTitle"></h3>
-    <div class="sub" id="dSub">숫자를 눌러 직접 입력하거나, 아래 버튼을 누를 때마다 더해져요</div>
+    <div class="sub" id="dSub">숫자를 눌러 직접 입력하거나, 아래 버튼을 누를 때마다 더해져요 · 지난달 합계를 한 날짜에 한꺼번에 넣어도 돼요</div>
     <div class="stepper">
       <button id="minus" aria-label="30분 빼기">−</button>
-      <div class="hv"><input id="hinput" type="number" inputmode="decimal" step="0.5" min="0" max="24" value="0" aria-label="봉사 시간"><small id="hmin">0시간</small></div>
+      <div class="hv"><input id="hinput" type="number" inputmode="decimal" step="0.5" min="0" value="0" aria-label="봉사 시간"><small id="hmin">0시간</small></div>
       <button id="plus" aria-label="30분 더하기">+</button>
     </div>
     <div class="addrow" id="addrow"><button data-a="0.5">+0.5</button><button data-a="1">+1</button><button data-a="5">+5</button><button data-a="10">+10</button></div>
@@ -265,6 +271,17 @@
     <label class="lb" for="memo">메모 <span style="font-weight:400">(선택)</span></label>
     <textarea id="memo" placeholder="예) 호별 방문, 전시대"></textarea>
     <div class="dayvisits" id="dayVisits" hidden></div>
+    <div class="linkbox">
+      <label class="lb">재방문·연구 기록 <span style="font-weight:400">(선택 · 재방문 탭에 자동으로 연결돼요)</span></label>
+      <select id="dvPerson"></select>
+      <div id="dvNew" hidden>
+        <div class="seg" id="dvType" style="margin:8px 0"><button data-v="rv" class="sel" style="flex:1">재방문</button><button data-v="st" style="flex:1">성서 연구</button></div>
+        <input type="text" id="dvName" class="tin" placeholder="이름 / 표시 (예: 김OO 할머니)">
+        <input type="text" id="dvAddr" class="tin" placeholder="주소 (예: OO동 OO아파트 101동 302호)">
+      </div>
+      <textarea id="dvNote" placeholder="이번에 나눈 내용, 다음 약속 등" style="min-height:64px;margin-top:8px"></textarea>
+      <button class="btn light" id="dvAdd" style="width:100%;margin-top:8px">＋ 이 날짜로 방문 기록 추가</button>
+    </div>
     <div class="actions">
       <button class="btn danger" id="dDel">지우기</button>
       <button class="btn light" id="dCancel">취소</button>
@@ -303,7 +320,8 @@
     <div class="field"><label class="lb">종류</label>
       <div class="seg" id="peType"><button data-v="rv" class="sel" style="flex:1">재방문</button><button data-v="st" style="flex:1">성서 연구</button></div></div>
     <div class="field"><label class="lb" for="peName">이름 / 표시</label><input type="text" id="peName" placeholder="예) 김OO 할머니, 302호"></div>
-    <div class="field"><label class="lb" for="peInfo">주소·연락처 <span style="font-weight:400">(선택)</span></label><input type="text" id="peInfo" placeholder="예) OO아파트 101동, 화요일 오후"></div>
+    <div class="field"><label class="lb" for="peAddr">주소</label><input type="text" id="peAddr" placeholder="예) OO동 OO아파트 101동 302호"></div>
+    <div class="field"><label class="lb" for="peInfo">연락처·만나기 좋은 때 <span style="font-weight:400">(선택)</span></label><input type="text" id="peInfo" placeholder="예) 010-…, 화요일 오후"></div>
     <div class="field"><label class="lb" for="peMemo">메모 <span style="font-weight:400">(선택)</span></label><textarea id="peMemo" placeholder="관심사, 다음에 나눌 내용 등"></textarea></div>
     <div class="actions">
       <button class="btn danger" id="peDel">삭제</button>
@@ -433,7 +451,7 @@ function render(){
 /* ---------------- day sheet ---------------- */
 let curKey=null, curH=0;
 const hin=document.getElementById('hinput');
-function setH(h,fromInput){curH=Math.max(0,Math.min(24,Math.round((+h||0)*2)/2));
+function setH(h,fromInput){curH=Math.max(0,Math.min(999,Math.round((+h||0)*2)/2));
   if(!fromInput) hin.value=num(curH);
   document.getElementById('hmin').textContent=fmtH(curH);}
 hin.addEventListener('input',()=>{const v=parseFloat(hin.value);setH(isNaN(v)?0:v,true);});
@@ -446,12 +464,45 @@ function openDay(k){
   document.getElementById('dTitle').textContent=`${m}월 ${d}일 (${wd})`;
   const e=DB.entries[k]||{h:0,memo:''};
   setH(e.h||0); document.getElementById('memo').value=e.memo||'';
+  showDayVisits(k);
+  document.getElementById('dDel').style.display=DB.entries[k]?'':'none';
+  fillDvPerson(); document.getElementById('dvNote').value='';
+  document.getElementById('dayDim').classList.add('on');
+}
+function showDayVisits(k){
   const vs=visitsOn(k), dv=document.getElementById('dayVisits');
   dv.hidden=!vs.length;
   dv.innerHTML=vs.length?'<b>이날 재방문·연구</b><br>'+vs.map(v=>`${v.p.type==='st'?'📖':'🚪'} ${esc(v.p.name)}${v.note?' — '+esc(v.note.split('\n')[0]).slice(0,40):''}`).join('<br>'):'';
-  document.getElementById('dDel').style.display=DB.entries[k]?'':'none';
-  document.getElementById('dayDim').classList.add('on');
 }
+let dvType='rv';
+function setDvType(t){dvType=t;document.querySelectorAll('#dvType button').forEach(b=>b.classList.toggle('sel',b.dataset.v===t));}
+document.querySelectorAll('#dvType button').forEach(b=>b.onclick=()=>setDvType(b.dataset.v));
+function fillDvPerson(){
+  const sel=document.getElementById('dvPerson');
+  const ppl=[...DB.people].sort((a,b)=>{const la=lastVisit(a),lb=lastVisit(b);return (lb?lb.d:'').localeCompare(la?la.d:'');});
+  sel.innerHTML='<option value="">— 누구를 만났나요? (선택) —</option>'+ppl.map(p=>`<option value="${p.id}">${p.type==='st'?'📖':'🚪'} ${esc(p.name)} · ${p.visits.length}회</option>`).join('')+'<option value="__new">＋ 새로 등록하기</option>';
+  sel.value=''; document.getElementById('dvNew').hidden=true;
+  document.getElementById('dvName').value=''; document.getElementById('dvAddr').value=''; setDvType('rv');
+}
+document.getElementById('dvPerson').onchange=e=>{document.getElementById('dvNew').hidden=e.target.value!=='__new';if(e.target.value==='__new')setTimeout(()=>document.getElementById('dvName').focus(),50);};
+// adds the visit typed in the day sheet; returns true if something was added
+function addDayVisit(quiet){
+  const sel=document.getElementById('dvPerson').value, note=document.getElementById('dvNote').value.trim();
+  if(!sel) return false;
+  let p;
+  if(sel==='__new'){
+    const name=document.getElementById('dvName').value.trim();
+    if(!name){if(!quiet)toast('이름이나 표시를 적어 주세요');return false;}
+    p={id:uid(),name,addr:document.getElementById('dvAddr').value.trim(),info:'',memo:'',type:dvType,created:curKey,visits:[]};
+    DB.people.push(p);
+  } else p=DB.people.find(x=>x.id===sel);
+  if(!p) return false;
+  p.visits.push({d:curKey,note}); save();
+  if(!quiet){toast(`${p.name} · ${p.visits.length}회째 기록했어요`);fillDvPerson();document.getElementById('dvNote').value='';showDayVisits(curKey);}
+  renderPeople();
+  return p;
+}
+document.getElementById('dvAdd').onclick=()=>{if(!document.getElementById('dvPerson').value){toast('누구를 만났는지 먼저 골라 주세요');return;}addDayVisit(false);};
 function closeDay(){document.getElementById('dayDim').classList.remove('on');curKey=null;}
 document.getElementById('minus').onclick=()=>{hin.blur();setH(curH-0.5);};
 document.getElementById('plus').onclick=()=>{hin.blur();setH(curH+0.5);};
@@ -460,7 +511,8 @@ document.getElementById('dSave').onclick=()=>{
   {const v=parseFloat(hin.value);if(!isNaN(v))setH(v);}
   const memo=document.getElementById('memo').value.trim();
   if(curH===0&&!memo) delete DB.entries[curKey]; else DB.entries[curKey]={h:curH,memo};
-  save(); closeDay(); render(); toast('저장했어요');
+  const added=addDayVisit(true);
+  save(); closeDay(); render(); toast(added?`저장했어요 · ${added.name} ${added.visits.length}회째`:'저장했어요');
 };
 document.getElementById('dDel').onclick=()=>{delete DB.entries[curKey];save();closeDay();render();toast('지웠어요');};
 document.getElementById('dayDim').onclick=e=>{if(e.target.id==='dayDim')closeDay();};
@@ -558,7 +610,7 @@ function renderPeople(){
   if(!list.length){el.innerHTML=`<div class="pempty">${DB.people.length?'이 종류의 기록이 아직 없어요':'아직 기록이 없어요<br><b>＋ 새로 추가</b>로 재방문할 분이나 성서 연구생을 등록하세요'}</div>`;return;}
   el.innerHTML=list.map(p=>{const lv=lastVisit(p);
     return `<button class="pcard" data-id="${p.id}"><div class="ptop"><span class="pname">${esc(p.name)}</span><span class="badge ${p.type}">${TYPE[p.type]}</span><span class="pcount">${p.visits.length}회</span></div>`+
-      `<div class="pmeta">${lv?`마지막 방문 ${shortDate(lv.d)} (${daysAgo(lv.d)})`:'아직 방문 기록 없음'}${p.info?' · '+esc(p.info):''}</div>`+
+      `<div class="pmeta">${lv?`마지막 방문 ${shortDate(lv.d)} (${daysAgo(lv.d)})`:'아직 방문 기록 없음'}</div>`+(p.addr?`<div class="pmeta">📍 ${esc(p.addr)}</div>`:'')+
       (lv&&lv.note?`<div class="plast">“${esc(lv.note.split('\n')[0])}”</div>`:'')+`</button>`;}).join('');
   el.querySelectorAll('.pcard').forEach(b=>b.onclick=()=>openPerson(b.dataset.id));
 }
@@ -573,6 +625,7 @@ function openEdit(id){
   setPeType(p?p.type:(pFilter==='st'?'st':'rv'));
   document.getElementById('peName').value=p?p.name:'';
   document.getElementById('peInfo').value=p?p.info||'':'';
+  document.getElementById('peAddr').value=p?p.addr||'':'';
   document.getElementById('peMemo').value=p?p.memo||'':'';
   document.getElementById('peDel').style.display=p?'':'none';
   document.getElementById('pEditDim').classList.add('on');
@@ -585,9 +638,9 @@ document.getElementById('pEditDim').onclick=e=>{if(e.target.id==='pEditDim')clos
 document.getElementById('peSave').onclick=()=>{
   const name=document.getElementById('peName').value.trim();
   if(!name){toast('이름이나 표시를 적어 주세요');return;}
-  const info=document.getElementById('peInfo').value.trim(), memo=document.getElementById('peMemo').value.trim();
-  if(editPid){const p=DB.people.find(x=>x.id===editPid);const changed=p.type!==peType;Object.assign(p,{name,info,memo,type:peType});save();closeEdit();renderPeople();if(curPid)openPerson(curPid);toast(changed?`${TYPE[peType]}(으)로 바꿨어요`:'저장했어요');}
-  else{const p={id:uid(),name,info,memo,type:peType,created:todayKey(),visits:[]};DB.people.push(p);save();closeEdit();renderPeople();openPerson(p.id);toast('추가했어요');}
+  const info=document.getElementById('peInfo').value.trim(), memo=document.getElementById('peMemo').value.trim(), addr=document.getElementById('peAddr').value.trim();
+  if(editPid){const p=DB.people.find(x=>x.id===editPid);const changed=p.type!==peType;Object.assign(p,{name,addr,info,memo,type:peType});save();closeEdit();renderPeople();if(curPid)openPerson(curPid);toast(changed?`${TYPE[peType]}(으)로 바꿨어요`:'저장했어요');}
+  else{const p={id:uid(),name,addr,info,memo,type:peType,created:todayKey(),visits:[]};DB.people.push(p);save();closeEdit();renderPeople();openPerson(p.id);toast('추가했어요');}
 };
 document.getElementById('peDel').onclick=()=>{
   const p=DB.people.find(x=>x.id===editPid);if(!p)return;
@@ -600,7 +653,7 @@ function openPerson(id){
   const p=DB.people.find(x=>x.id===id); if(!p)return; curPid=id;
   document.getElementById('pdName').textContent=p.name;
   const bd=document.getElementById('pdBadge');bd.className='badge '+p.type;bd.textContent=TYPE[p.type];
-  document.getElementById('pdInfo').textContent=p.info||' ';
+  document.getElementById('pdInfo').innerHTML=(p.addr?`📍 ${esc(p.addr)} <a class="maplink" href="https://map.naver.com/p/search/${encodeURIComponent(p.addr)}" target="_blank" rel="noopener">지도</a>`:'')+(p.info?`${p.addr?'<br>':''}☎ ${esc(p.info)}`:'')||' ';
   document.getElementById('pdMemo').textContent=p.memo||'';
   document.getElementById('pvLabel').textContent=p.visits.length?`${p.visits.length+1}번째 ${p.type==='st'?'연구':'재방문'} 기록하기`:`첫 ${p.type==='st'?'연구':'방문'} 기록하기`;
   document.getElementById('pvDate').value=todayKey();
