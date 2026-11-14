@@ -145,6 +145,18 @@
   .addrow button:active{background:#d3e9e1;transform:scale(.97)}
   .subrow{display:flex;justify-content:center;gap:8px;margin-bottom:14px}
   .subrow button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 14px;font-size:13px;font-weight:700;color:var(--sub)}
+  .creditbox{background:#f6f2fb;border:1px solid #e4dbf3;border-radius:16px;padding:12px;margin-top:12px}
+  .creditbox .crow{display:flex;align-items:center;gap:8px}
+  .creditbox .crow input{width:90px;border:1.5px solid #e4dbf3;border-radius:12px;padding:10px;font:inherit;font-size:18px;font-weight:900;text-align:center;background:#fff;color:#6a4fb3}
+  .creditbox .crow button{border:0;background:#ebe4f7;color:#6a4fb3;border-radius:12px;padding:10px 12px;font-weight:900;font-size:15px}
+  .creditbox .tin{border-color:#e4dbf3}
+  .day .h.c{background:#6a4fb3}
+  .day .cdot{position:absolute;left:5px;top:5px;width:6px;height:6px;border-radius:50%;background:#6a4fb3}
+  .mrow .mbar{display:flex}
+  .mrow .mbar div.cr{background:#9a86d0;border-radius:0 99px 99px 0}
+  .mrow .mval small{display:block;font-size:10px;font-weight:700;color:#6a4fb3;line-height:1.1}
+  .legend{display:flex;gap:12px;font-size:11px;color:var(--sub);margin-top:10px}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
   .linkbox{background:#f4f8f6;border:1px solid #d9ebe5;border-radius:16px;padding:12px;margin-top:12px}
   .linkbox select,.tin{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:11px 12px;font:inherit;font-size:15px;background:#fff;color:var(--ink);margin-top:2px}
   .tin{margin-top:8px}
@@ -270,6 +282,16 @@
     <div class="subrow"><button id="hzero">0으로 되돌리기</button></div>
     <label class="lb" for="memo">메모 <span style="font-weight:400">(선택)</span></label>
     <textarea id="memo" placeholder="예) 호별 방문, 전시대"></textarea>
+    <div class="creditbox">
+      <label class="lb" style="color:#6a4fb3">인정 시간 <span style="font-weight:400">(선택 · 총 시간에 더해져요)</span></label>
+      <div class="crow">
+        <button id="cMinus" aria-label="인정 시간 30분 빼기">−</button>
+        <input id="cinput" type="number" inputmode="decimal" step="0.5" min="0" value="0" aria-label="인정 시간">
+        <button id="cPlus" aria-label="인정 시간 30분 더하기">+</button>
+        <button data-c="1">+1</button><button data-c="5">+5</button>
+      </div>
+      <input type="text" id="cnote" class="tin" placeholder="비고 (예: 대회 자원봉사, 왕국회관 건축)">
+    </div>
     <div class="dayvisits" id="dayVisits" hidden></div>
     <div class="linkbox">
       <label class="lb">재방문·연구 기록 <span style="font-weight:400">(선택 · 재방문 탭에 자동으로 연결돼요)</span></label>
@@ -374,7 +396,8 @@ function fmtH(h){ // 2.5 -> "2시간 30분"
   return (whole?whole+'시간':'')+(half?(whole?' ':'')+'30분':'');
 }
 const num=h=>{const t=Math.round(h*2)/2;return Number.isInteger(t)?String(t):t.toFixed(1);};
-function monthTotal(y,m){let s=0;const pre=`${y}-${pad(m+1)}-`;for(const k in DB.entries)if(k.startsWith(pre))s+=DB.entries[k].h||0;return s;}
+function monthParts(y,m){let h=0,c=0;const pre=`${y}-${pad(m+1)}-`;for(const k in DB.entries)if(k.startsWith(pre)){h+=DB.entries[k].h||0;c+=DB.entries[k].c||0;}return {h,c};}
+function monthTotal(y,m){const p=monthParts(y,m);return p.h+p.c;} // 인정 시간 포함 총 시간
 function yearStart(y,m){ // service year: September 1 to the end of August next year
   return m>=8?[y,8]:[y-1,8];
 }
@@ -399,7 +422,8 @@ function render(){
   document.getElementById('mbar').style.width=Math.min(100,goal?mt/goal*100:0)+'%';
   document.getElementById('mbarWrap').classList.toggle('done',mt>=goal);
   const days=Object.keys(DB.entries).filter(k=>k.startsWith(`${vy}-${pad(vm+1)}-`)&&DB.entries[k].h>0).length;
-  document.getElementById('mnote').innerHTML=mt>goal?`목표보다 <b>${fmtH(mt-goal)}</b> 더 했어요 · 봉사한 날 ${days}일`:`봉사한 날 <b>${days}일</b>`;
+  const mp=monthParts(vy,vm);
+  document.getElementById('mnote').innerHTML=(mp.c>0?`봉사 <b>${num(mp.h)}</b> + 인정 <b style="color:#6a4fb3">${num(mp.c)}</b>시간 · `:'')+(mt>goal?`목표보다 <b>${fmtH(mt-goal)}</b> 더 했어요 · 봉사한 날 ${days}일`:`봉사한 날 <b>${days}일</b>`);
 
   // calendar
   const g=document.getElementById('grid'); const first=new Date(vy,vm,1).getDay();
@@ -407,8 +431,9 @@ function render(){
   for(let d=1;d<=dim;d++){
     const k=key(vy,vm,d), e=DB.entries[k], wd=(first+d-1)%7, dt=new Date(vy,vm,d);
     const cls=['day']; if(wd===0)cls.push('sun'); if(wd===6)cls.push('sat');
-    if(e&&e.h>0)cls.push('has'); if(dt.getTime()===today.getTime())cls.push('today'); if(dt>today)cls.push('future');
-    html+=`<button class="${cls.join(' ')}" data-k="${k}"><span class="n">${d}</span>${e&&e.h>0?`<span class="h">${num(e.h)}</span>`:''}${e&&e.memo?'<span class="memo" title="메모 있음"></span>':''}</button>`;
+    const tot=e?(e.h||0)+(e.c||0):0;
+    if(tot>0)cls.push('has'); if(dt.getTime()===today.getTime())cls.push('today'); if(dt>today)cls.push('future');
+    html+=`<button class="${cls.join(' ')}" data-k="${k}"><span class="n">${d}</span>${tot>0?`<span class="h${!(e.h>0)?' c':''}">${num(tot)}</span>`:''}${e&&e.c>0?'<span class="cdot" title="인정 시간 있음"></span>':''}${e&&e.memo?'<span class="memo" title="메모 있음"></span>':''}</button>`;
   }
   g.innerHTML=html;
   g.querySelectorAll('.day[data-k]').forEach(b=>b.onclick=()=>openDay(b.dataset.k));
@@ -417,15 +442,15 @@ function render(){
   const ms=yearMonths(vy,vm), [sy,sm]=ms[0], [ey,em]=ms[11];
   document.getElementById('ytitle').textContent=`${sy}~${String(ey).slice(2)} 봉사 연도`;
   document.getElementById('yrange').textContent=`${sy}.${sm+1} ~ ${ey}.${em+1}`;
-  let yt=0, passed=0, rows='';
+  let yt=0, yc=0, passed=0, rows='';
   const curIdx=ms.findIndex(([y,m])=>y===today.getFullYear()&&m===today.getMonth());
   ms.forEach(([y,m],i)=>{
-    const t=monthTotal(y,m); yt+=t;
+    const pt=monthParts(y,m), t=pt.h+pt.c; yt+=t; yc+=pt.c;
     const fut=new Date(y,m,1)>today, cur=y===today.getFullYear()&&m===today.getMonth();
     if(!fut&&!cur) passed++;
-    rows+=`<button class="mrow${cur?' cur':''}${fut?' fut':''}" data-y="${y}" data-m="${m}"><span class="mname">${m+1}월</span><span class="mbar${t>=S.month?' full':''}"><div style="width:${Math.min(100,S.month?t/S.month*100:0)}%"></div></span><span class="mval">${num(t)}시간</span></button>`;
+    rows+=`<button class="mrow${cur?' cur':''}${fut?' fut':''}" data-y="${y}" data-m="${m}"><span class="mname">${m+1}월</span><span class="mbar${t>=S.month?' full':''}"><div style="width:${Math.min(100,S.month?pt.h/S.month*100:0)}%"></div>${pt.c>0?`<div class="cr" style="width:${Math.max(0,Math.min(100-(S.month?pt.h/S.month*100:0),S.month?pt.c/S.month*100:0))}%"></div>`:''}</span><span class="mval">${num(t)}시간${pt.c>0?`<small>인정 ${num(pt.c)}</small>`:''}</span></button>`;
   });
-  document.getElementById('ymonths').innerHTML=rows;
+  document.getElementById('ymonths').innerHTML=rows+(yc>0?`<div class="legend"><span><i style="background:var(--main2)"></i>봉사 시간</span><span><i style="background:#9a86d0"></i>인정 시간 (올해 ${num(yc)}시간)</span></div>`:'');
   document.querySelectorAll('.mrow').forEach(b=>b.onclick=()=>{vy=+b.dataset.y;vm=+b.dataset.m;render();window.scrollTo({top:0,behavior:'smooth'});});
   document.getElementById('ytotal').innerHTML=`${num(yt)}<span>/ ${S.year}시간</span>`;
   document.getElementById('ybar').style.width=Math.min(100,S.year?yt/S.year*100:0)+'%';
@@ -464,6 +489,7 @@ function openDay(k){
   document.getElementById('dTitle').textContent=`${m}월 ${d}일 (${wd})`;
   const e=DB.entries[k]||{h:0,memo:''};
   setH(e.h||0); document.getElementById('memo').value=e.memo||'';
+  setC(e.c||0); document.getElementById('cnote').value=e.cnote||'';
   showDayVisits(k);
   document.getElementById('dDel').style.display=DB.entries[k]?'':'none';
   fillDvPerson(); document.getElementById('dvNote').value='';
@@ -503,6 +529,14 @@ function addDayVisit(quiet){
   return p;
 }
 document.getElementById('dvAdd').onclick=()=>{if(!document.getElementById('dvPerson').value){toast('누구를 만났는지 먼저 골라 주세요');return;}addDayVisit(false);};
+let curC=0; const cin=document.getElementById('cinput');
+function setC(v,fromInput){curC=Math.max(0,Math.min(999,Math.round((+v||0)*2)/2));if(!fromInput)cin.value=num(curC);}
+cin.addEventListener('input',()=>{const v=parseFloat(cin.value);setC(isNaN(v)?0:v,true);});
+cin.addEventListener('blur',()=>{cin.value=num(curC);});
+cin.addEventListener('focus',()=>{setTimeout(()=>cin.select(),0);});
+document.getElementById('cMinus').onclick=()=>{cin.blur();setC(curC-0.5);};
+document.getElementById('cPlus').onclick=()=>{cin.blur();setC(curC+0.5);};
+document.querySelectorAll('.creditbox [data-c]').forEach(b=>b.onclick=()=>{cin.blur();setC(curC+(+b.dataset.c));});
 function closeDay(){document.getElementById('dayDim').classList.remove('on');curKey=null;}
 document.getElementById('minus').onclick=()=>{hin.blur();setH(curH-0.5);};
 document.getElementById('plus').onclick=()=>{hin.blur();setH(curH+0.5);};
@@ -510,7 +544,10 @@ document.getElementById('dCancel').onclick=closeDay;
 document.getElementById('dSave').onclick=()=>{
   {const v=parseFloat(hin.value);if(!isNaN(v))setH(v);}
   const memo=document.getElementById('memo').value.trim();
-  if(curH===0&&!memo) delete DB.entries[curKey]; else DB.entries[curKey]={h:curH,memo};
+  {const v=parseFloat(cin.value);if(!isNaN(v))setC(v);}
+  const cnote=document.getElementById('cnote').value.trim();
+  if(curH===0&&!memo&&curC===0&&!cnote) delete DB.entries[curKey];
+  else{const en={h:curH,memo}; if(curC>0||cnote){en.c=curC;en.cnote=cnote;} DB.entries[curKey]=en;}
   const added=addDayVisit(true);
   save(); closeDay(); render(); toast(added?`저장했어요 · ${added.name} ${added.visits.length}회째`:'저장했어요');
 };
@@ -527,10 +564,11 @@ document.getElementById('next').onclick=()=>{vm++;if(vm>11){vm=0;vy++;}render();
 
 /* ---------------- report copy ---------------- */
 document.getElementById('btnReport').onclick=async()=>{
-  const t=monthTotal(vy,vm);
+  const t=monthTotal(vy,vm), mp=monthParts(vy,vm);
   const pre=`${vy}-${pad(vm+1)}-`;
+  const notes=Object.keys(DB.entries).filter(k=>k.startsWith(pre)&&DB.entries[k].c>0).sort().map(k=>{const e=DB.entries[k];return `${+k.slice(8)}일 ${num(e.c)}시간${e.cnote?' '+e.cnote:''}`;});
   const studies=DB.people.filter(p=>p.type==='st'&&p.visits.some(v=>v.d.startsWith(pre))).length;
-  const txt=`${vy}년 ${vm+1}월 봉사 보고\n시간: ${num(t)}시간\n성서 연구: ${studies}`;
+  const txt=`${vy}년 ${vm+1}월 봉사 보고\n시간: ${num(t)}시간`+(mp.c>0?` (봉사 ${num(mp.h)} + 인정 ${num(mp.c)})`:'')+`\n성서 연구: ${studies}`+(mp.c>0?`\n비고: 인정 시간 ${num(mp.c)}시간 — ${notes.join(', ')}`:'');
   try{await navigator.clipboard.writeText(txt);toast(`복사했어요: ${num(t)}시간 · 연구 ${studies}`);}
   catch(e){prompt('아래 문구를 복사하세요',txt);}
 };
