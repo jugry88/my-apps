@@ -205,6 +205,14 @@
   .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translate(-50%,20px);background:#24232f;color:#fff;padding:11px 18px;border-radius:999px;font-size:14px;font-weight:700;opacity:0;transition:.25s;z-index:40;pointer-events:none;white-space:nowrap}
   .toast.on{opacity:1;transform:translate(-50%,0)}
   .tip{font-size:12px;color:var(--sub);text-align:center;line-height:1.6}
+  .autob{background:#eef7f4;border-radius:14px;padding:10px 12px;margin-top:10px;font-size:13px;color:#2b5f55;line-height:1.5}
+  .autob b{color:#1f7a68}
+  .snaps{margin-top:8px;display:flex;flex-direction:column;gap:6px;max-height:210px;overflow:auto}
+  .snap{display:flex;align-items:center;gap:8px;background:#fff;border-radius:10px;padding:7px 10px;font-size:12.5px;color:#333}
+  .snap span{flex:1}
+  .snap small{color:#888}
+  .snap button{border:0;background:#e3f1ec;color:#1f7a68;border-radius:999px;padding:5px 10px;font-weight:800;font-size:12px}
+  #pasteTa{width:100%;min-height:140px;border:1.5px solid #e2e2e2;border-radius:12px;padding:10px;font:inherit;font-size:12px;box-sizing:border-box}
   .backup-warn{display:none;background:var(--warnsoft);color:#8a4e12;border-radius:14px;padding:10px 12px;font-size:13px;line-height:1.5}
   .backup-warn.on{display:block}
   .backup-warn button{border:0;background:#fff;border-radius:999px;padding:5px 10px;font-size:12px;font-weight:700;margin-left:6px;color:#8a4e12}
@@ -222,7 +230,7 @@
 
   <nav class="tabs" id="tabs"><button data-t="home" class="sel">🏠 시간 기록</button><button data-t="people">📒 재방문·연구</button></nav>
 
-  <div class="backup-warn" id="backupWarn">기록은 이 기기에만 저장돼요. 가끔 백업해 두세요.<button id="backupNow">지금 백업</button></div>
+  <div class="backup-warn" id="backupWarn">휴대폰을 잃어버리면 기록도 사라져요. 카톡으로 백업을 보내 두세요.<button id="backupNow">지금 백업</button></div>
 
   <div class="pane" id="paneHome">
   <section class="card">
@@ -320,12 +328,18 @@
     <div class="setrow"><span>한 달 목표<small>시간</small></span><input type="number" id="sMonth" min="1" step="1"></div>
     <div class="setrow"><span>1년 목표<small>시간 · 봉사 연도(9월~다음 해 8월)</small></span><input type="number" id="sYear" min="1" step="1"></div>
     <div class="setrow" style="display:block">
-      <span>백업<small>기기를 바꾸거나 인터넷 기록을 지우기 전에 꼭 백업하세요</small></span>
+      <span>백업<small>기기를 바꾸거나 인터넷 기록을 지우기 전에 꼭 바깥 백업도 해 두세요</small></span>
+      <div class="autob" id="autoInfo">자동 백업 준비 중…</div>
+      <div class="snaps" id="snapList"></div>
       <div class="actions" style="margin-top:10px">
-        <button class="btn light" id="bExport">💾 백업 파일 저장</button>
-        <button class="btn light" id="bImport">📂 백업 불러오기</button>
+        <button class="btn light" id="bShareTxt">💬 카톡으로 보내기</button>
+        <button class="btn light" id="bExport">💾 파일로 저장</button>
       </div>
-      <input type="file" id="fileIn" accept=".json,application/json" hidden>
+      <div class="actions" style="margin-top:8px">
+        <button class="btn light" id="bImport">📂 파일 불러오기</button>
+        <button class="btn light" id="bPaste">📋 붙여넣어 복원</button>
+      </div>
+      <input type="file" id="fileIn" accept=".json,.txt,application/json,text/plain" hidden>
     </div>
     <div class="actions" style="margin-top:16px">
       <button class="btn danger" id="bReset">전체 기록 지우기</button>
@@ -374,6 +388,19 @@
   </div>
 </div>
 
+<!-- paste restore sheet -->
+<div class="dim" id="pasteDim" style="z-index:30">
+  <div class="sheet">
+    <h3>붙여넣어 복원</h3>
+    <div class="sub">카톡 등에 보내 둔 백업 글을 길게 눌러 전체 복사한 뒤 아래에 붙여넣어 주세요</div>
+    <textarea id="pasteTa" placeholder="봉사보고백업: { … }"></textarea>
+    <div class="actions" style="margin-top:12px">
+      <button class="btn light" id="pasteCancel">취소</button>
+      <button class="btn main" id="pasteOk" style="flex:1.6">복원하기</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -382,7 +409,43 @@ const KEY='serviceReport.v1';
 const DEF={entries:{},people:[],settings:{month:50,year:600},lastBackup:0};
 function load(){try{const d=JSON.parse(localStorage.getItem(KEY));if(d&&d.entries)return {...DEF,...d,people:Array.isArray(d.people)?d.people:[],settings:{...DEF.settings,...(d.settings||{})}};}catch(e){}return JSON.parse(JSON.stringify(DEF));}
 let DB=load();
-function save(){try{localStorage.setItem(KEY,JSON.stringify(DB));}catch(e){toast('저장하지 못했어요. 저장 공간을 확인해 주세요.');}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(DB));}catch(e){toast('저장하지 못했어요. 저장 공간을 확인해 주세요.');}schedSnap();}
+const hasData=d=>!!d&&((d.entries&&Object.keys(d.entries).length>0)||(Array.isArray(d.people)&&d.people.length>0));
+function normalize(d){return {...DEF,...d,people:Array.isArray(d.people)?d.people:[],settings:{...DEF.settings,...(d.settings||{})}};}
+
+/* ---- 자동 백업: 저장할 때마다 이 기기의 별도 저장소(IndexedDB)에 복사본을 남겨요 ----
+   - latest: 가장 최근 상태 (기록이 사라지면 자동 복구)
+   - d-YYYY-MM-DD: 날짜별 복사본 최근 30일
+   - x-…: 초기화·불러오기 직전 복사본 (최근 10개) */
+const SNAP={db:null,
+  open(){if(this.db)return this.db;this.db=new Promise((res,rej)=>{try{const r=indexedDB.open('serviceReportBackup',1);r.onupgradeneeded=()=>r.result.createObjectStore('snaps');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);}catch(e){rej(e);}});return this.db;},
+  async tx(mode,fn){const db=await this.open();return new Promise((res,rej)=>{const t=db.transaction('snaps',mode),st=t.objectStore('snaps');const out=fn(st);t.oncomplete=()=>res(out&&out.result);t.onerror=()=>rej(t.error);});},
+  put(k,v){return this.tx('readwrite',st=>st.put(v,k));},
+  get(k){return this.tx('readonly',st=>st.get(k));},
+  del(k){return this.tx('readwrite',st=>st.delete(k));},
+  keys(){return this.tx('readonly',st=>st.getAllKeys());}
+};
+let snapTimer=null;
+function schedSnap(){clearTimeout(snapTimer);snapTimer=setTimeout(writeSnap,600);}
+async function writeSnap(label){
+  if(!hasData(DB))return; // 빈 상태로 좋은 백업을 덮어쓰지 않아요
+  try{
+    const v={t:Date.now(),data:JSON.stringify(DB)};
+    await SNAP.put('latest',v);
+    const n=new Date();await SNAP.put('d-'+n.getFullYear()+'-'+pad(n.getMonth()+1)+'-'+pad(n.getDate()),v);
+    if(label)await SNAP.put('x-'+v.t+'-'+label,v);
+    const ks=(await SNAP.keys()).map(String);
+    const ds=ks.filter(k=>k.startsWith('d-')).sort().reverse().slice(30), xs=ks.filter(k=>k.startsWith('x-')).sort().reverse().slice(10);
+    for(const k of ds.concat(xs))await SNAP.del(k);
+    localStorage.setItem(KEY+'.snapAt',String(v.t));
+  }catch(e){}
+}
+async function recoverIfEmpty(){
+  if(hasData(DB))return;
+  try{const v=await SNAP.get('latest');if(!v)return;const d=JSON.parse(v.data);if(!hasData(d))return;
+    DB=normalize(d);localStorage.setItem(KEY,JSON.stringify(DB));render();if(typeof renderPeople==='function')renderPeople();
+    toast('자동 백업에서 기록을 되살렸어요');}catch(e){}
+}
 // ask the browser to keep this data (helps against automatic clean-up)
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist();}catch(e){}
 
@@ -470,7 +533,7 @@ function render(){
 
   // backup reminder: has records and no backup for 30 days
   const has=Object.keys(DB.entries).length>0;
-  document.getElementById('backupWarn').classList.toggle('on',has&&(Date.now()-(DB.lastBackup||0))>30*864e5);
+  document.getElementById('backupWarn').classList.toggle('on',has&&(Date.now()-(DB.lastBackup||0))>14*864e5);
 }
 
 /* ---------------- day sheet ---------------- */
@@ -575,7 +638,7 @@ document.getElementById('btnReport').onclick=async()=>{
 
 /* ---------------- settings ---------------- */
 function openSet(){const S=DB.settings;document.getElementById('sMonth').value=S.month;document.getElementById('sYear').value=S.year;
-  document.getElementById('setDim').classList.add('on');}
+  document.getElementById('setDim').classList.add('on');renderAutoInfo();}
 function closeSet(){
   const mo=parseFloat(document.getElementById('sMonth').value), yr=parseFloat(document.getElementById('sYear').value);
   if(mo>0) DB.settings.month=mo; if(yr>0) DB.settings.year=yr;
@@ -585,31 +648,72 @@ document.getElementById('btnSettings').onclick=openSet;
 document.getElementById('sClose').onclick=closeSet;
 document.getElementById('setDim').onclick=e=>{if(e.target.id==='setDim')closeSet();};
 
-async function exportData(){
-  const name=`봉사보고_백업_${today.getFullYear()}${pad(today.getMonth()+1)}${pad(today.getDate())}.json`;
-  const blob=new Blob([JSON.stringify(DB,null,1)],{type:'application/json'});
-  const file=new File([blob],name,{type:'application/json'});
+const BK_PREFIX='봉사보고백업:';
+function backupText(){return BK_PREFIX+JSON.stringify(DB);}
+function stamp(){const n=new Date();return `${n.getFullYear()}${pad(n.getMonth()+1)}${pad(n.getDate())}`;}
+function markBackedUp(msg){DB.lastBackup=Date.now();save();render();renderAutoInfo();toast(msg);}
+async function copyText(t){try{await navigator.clipboard.writeText(t);return true;}catch(e){}
+  try{const ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();const ok=document.execCommand('copy');ta.remove();return ok;}catch(e){return false;}}
+// 카톡 '나와의 채팅' 등에 글로 보내기 (휴대폰에서 가장 확실한 방법)
+async function shareText(){
+  const t=backupText();
   try{
-    if(navigator.canShare&&navigator.canShare({files:[file]})&&/iPad|iPhone|iPod|Android/i.test(navigator.userAgent)){await navigator.share({files:[file]});}
-    else{const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),30000);}
-    DB.lastBackup=Date.now();save();render();toast('백업 파일을 만들었어요');
-  }catch(e){if(e&&e.name!=='AbortError')toast('백업하지 못했어요');}
+    if(navigator.share){await navigator.share({title:'봉사 보고 백업 '+stamp(),text:t});markBackedUp('백업 글을 보냈어요');return;}
+  }catch(e){if(e&&e.name==='AbortError')return;}
+  if(await copyText(t)){markBackedUp('백업 글을 복사했어요. 카톡 나와의 채팅에 붙여넣어 두세요');}
+  else toast('이 브라우저에서는 보낼 수 없어요. 파일로 저장을 눌러 주세요');
+}
+async function exportData(){
+  const name=`봉사보고_백업_${stamp()}.txt`;
+  const blob=new Blob([backupText()],{type:'text/plain'});
+  try{
+    const file=new File([blob],name,{type:'text/plain'});
+    if(/iPad|iPhone|iPod|Android/i.test(navigator.userAgent)&&navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'봉사 보고 백업'});markBackedUp('백업 파일을 만들었어요');return;}
+  }catch(e){if(e&&e.name==='AbortError')return;}
+  try{const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),30000);
+    markBackedUp('백업 파일을 저장했어요 (다운로드 폴더)');}
+  catch(e){shareText();}
+}
+function parseBackup(t){t=String(t||'').trim();const i=t.indexOf('{');if(i<0)throw 0;t=t.slice(i,t.lastIndexOf('}')+1);const d=JSON.parse(t);if(!d||typeof d.entries!=='object')throw 0;return d;}
+async function restoreFrom(d,ask){
+  const n=Object.keys(d.entries).length;
+  if(ask&&!confirm(`백업에 있는 ${n}일치 시간 기록과 ${(d.people||[]).length}명의 재방문·연구 기록으로 바꿀까요?\n지금 기록은 자동 백업 목록에 따로 남겨 둘게요.`))return false;
+  await writeSnap('before-restore');
+  DB=normalize(d);save();render();renderPeople();renderAutoInfo();toast('백업을 불러왔어요');return true;
+}
+async function renderAutoInfo(){
+  const info=document.getElementById('autoInfo'), list=document.getElementById('snapList');if(!info)return;
+  let ks=[];try{ks=(await SNAP.keys()).map(String);}catch(e){info.innerHTML='이 브라우저에서는 자동 백업을 쓸 수 없어요. 아래 버튼으로 백업해 주세요.';list.innerHTML='';return;}
+  const at=+localStorage.getItem(KEY+'.snapAt')||0;
+  const lb=DB.lastBackup?new Date(DB.lastBackup):null;
+  info.innerHTML=`🛟 <b>자동 백업 켜짐</b> · 기록할 때마다 이 기기에 복사본을 남겨요${at?` (마지막 ${new Date(at).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})})`:''}.<br>기록이 사라지면 자동으로 되살리고, 아래 목록에서 날짜를 골라 되돌릴 수도 있어요.<br>바깥 백업(카톡·파일): ${lb?`${lb.getMonth()+1}월 ${lb.getDate()}일`:'<b style="color:#c0392b">아직 안 함</b>'}`;
+  const show=ks.filter(k=>k.startsWith('d-')||k.startsWith('x-')).sort((a,b)=>{const ta=a.startsWith('x-')?+a.split('-')[1]:Date.parse(a.slice(2));const tb=b.startsWith('x-')?+b.split('-')[1]:Date.parse(b.slice(2));return tb-ta;});
+  const rows=[];
+  for(const k of show){const v=await SNAP.get(k);if(!v)continue;let d;try{d=JSON.parse(v.data);}catch(e){continue;}
+    const dt=new Date(v.t), lab=k.startsWith('x-')?(k.includes('reset')?' · 지우기 전':' · 불러오기 전'):'';
+    rows.push(`<div class="snap"><span>${dt.getMonth()+1}월 ${dt.getDate()}일 ${pad(dt.getHours())}:${pad(dt.getMinutes())}${lab}<br><small>${Object.keys(d.entries||{}).length}일 기록 · ${(d.people||[]).length}명</small></span><button data-k="${k}">되돌리기</button></div>`);}
+  list.innerHTML=rows.join('');
+  list.querySelectorAll('button').forEach(b=>b.onclick=async()=>{const v=await SNAP.get(b.dataset.k);if(!v)return;const d=JSON.parse(v.data);
+    if(!confirm('이 시점의 기록으로 되돌릴까요?\n지금 기록도 목록에 따로 남겨 둘게요.'))return;await restoreFrom(d,false);});
 }
 document.getElementById('bExport').onclick=exportData;
-document.getElementById('backupNow').onclick=exportData;
+document.getElementById('bShareTxt').onclick=shareText;
+document.getElementById('bPaste').onclick=()=>{document.getElementById('pasteTa').value='';document.getElementById('pasteDim').classList.add('on');};
+document.getElementById('pasteCancel').onclick=()=>document.getElementById('pasteDim').classList.remove('on');
+document.getElementById('pasteOk').onclick=async()=>{let d;try{d=parseBackup(document.getElementById('pasteTa').value);}catch(e){toast('백업 글을 읽지 못했어요. 전체를 복사했는지 확인해 주세요');return;}
+  if(await restoreFrom(d,true))document.getElementById('pasteDim').classList.remove('on');};
+document.getElementById('backupNow').onclick=()=>{openSet();};
 document.getElementById('bImport').onclick=()=>document.getElementById('fileIn').click();
 document.getElementById('fileIn').onchange=async e=>{
   const f=e.target.files[0];if(!f)return;
-  try{const d=JSON.parse(await f.text());if(!d||typeof d.entries!=='object')throw 0;
-    const n=Object.keys(d.entries).length;
-    if(!confirm(`백업에 있는 ${n}일치 시간 기록과 ${(d.people||[]).length}명의 재방문·연구 기록으로 바꿀까요?\n지금 이 기기의 기록은 백업 내용으로 바뀌어요.`))return;
-    DB={...DEF,...d,people:Array.isArray(d.people)?d.people:[],settings:{...DEF.settings,...(d.settings||{})}};save();render();renderPeople();toast('백업을 불러왔어요');
-  }catch(err){toast('백업 파일을 읽지 못했어요');}
+  let d;try{d=parseBackup(await f.text());}catch(err){toast('백업 파일을 읽지 못했어요');e.target.value='';return;}
+  await restoreFrom(d,true);
   e.target.value='';
 };
 document.getElementById('bReset').onclick=()=>{
-  if(!confirm('모든 봉사 기록(시간, 재방문·연구)을 지울까요?\n되돌릴 수 없어요. 먼저 백업을 권해요.'))return;
-  DB.entries={};DB.people=[];save();render();renderPeople();toast('모든 기록을 지웠어요');
+  if(!confirm('모든 봉사 기록(시간, 재방문·연구)을 지울까요?\n지우기 전 기록은 자동 백업 목록에 남아서 되돌릴 수 있어요.'))return;
+  if(prompt('정말 지우려면 "지우기"라고 입력해 주세요')!=='지우기'){toast('지우지 않았어요');return;}
+  writeSnap('reset').then(()=>SNAP.del('latest')).catch(()=>{}).then(()=>{DB.entries={};DB.people=[];localStorage.setItem(KEY,JSON.stringify(DB));render();renderPeople();renderAutoInfo();toast('모든 기록을 지웠어요 (자동 백업 목록에서 되돌릴 수 있어요)');});
 };
 
 /* ---------------- tabs ---------------- */
@@ -719,6 +823,8 @@ if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch
 
 render();
 try{if(sessionStorage.getItem('svcTab')==='people')showTab('people');}catch(e){}
+// 시작할 때: 기록이 비어 있으면 자동 백업에서 되살리고, 있으면 복사본을 하나 남겨요
+recoverIfEmpty().then(()=>writeSnap());
 </script>
 </body>
 </html>
