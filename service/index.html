@@ -892,7 +892,14 @@ recoverIfEmpty().then(()=>writeSnap());
    - 로그인은 한 번만: 다음부터는 앱을 열면 자동으로 로그인돼 있어요
    - 기록할 때마다 users/{내 계정}에 저장, 날짜별 복사본은 users/{내 계정}/daily/{날짜}
    - 아래 설정값은 공개돼도 괜찮은 값이에요 (보안은 Firestore 규칙이 지켜요) */
-const FIREBASE_CONFIG = null; // ← 등록 후 여기에 설정값을 넣어요
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyD5NqAfFXXsnPL_3_6ygVd81DL8ZNSt_K0",
+  authDomain: "jugry88-apps.firebaseapp.com",
+  projectId: "jugry88-apps",
+  storageBucket: "jugry88-apps.firebasestorage.app",
+  messagingSenderId: "139461661799",
+  appId: "1:139461661799:web:ce7cb32f456f0018a8b0c2"
+};
 
 const $=id=>document.getElementById(id);
 const chip=$('btnCloud'), card=$('loginCard'), row=$('cloudRow'), info=$('cloudInfo'), cbtn=$('cloudBtn');
