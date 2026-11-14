@@ -2,7 +2,7 @@
 
 태블릿·휴대폰을 피켓처럼 들고 안내할 때 쓰는 움직이는 안내 화면.
 
-- 공개 주소: https://motion-picket.netlify.app
+- 공개 주소: https://jugry88.github.io/my-apps/picket/ (이전 공유 주소 https://motion-picket.netlify.app 도 그대로 열림)
 - 처음 만든 날: 2026-11-07
 - 파일: `index.html` 하나에 모든 기능이 들어 있음 (외부 파일 없음)
 

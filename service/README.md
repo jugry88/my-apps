@@ -2,7 +2,7 @@
 
 파이오니아 봉사 시간을 달력에 기록하고 월·연 합계를 보는 개인용 앱.
 
-- 주소: https://jugry88-apps.netlify.app/service/
+- 주소: https://jugry88.github.io/my-apps/service/
 - 처음 만든 날: 2026-11-14
 
 ## 기능

@@ -20,15 +20,17 @@ my-apps/
 - 새 앱을 추가하면 첫 화면 `index.html`의 `APPS` 목록에도 한 묶음을 추가해요.
 - 앱마다 폴더 안 `README.md`에 무엇을 하는 앱인지, 무엇을 고쳤는지 기록해요.
 
-## 공개 주소
+## 공개 주소 (GitHub Pages)
 
-| 앱 | 주소 | 넷리파이 설정 |
-|---|---|---|
-| 앱 모음 첫 화면 | https://jugry88-apps.netlify.app | 기본 폴더: (비움) |
-| 모션 피켓 | https://motion-picket.netlify.app | 기본 폴더: `picket` |
-| 봉사 보고 | https://jugry88-apps.netlify.app/service/ | (앱 모음 사이트 안) |
+| 앱 | 주소 |
+|---|---|
+| 앱 모음 첫 화면 | https://jugry88.github.io/my-apps/ |
+| 모션 피켓 | https://jugry88.github.io/my-apps/picket/ |
+| 봉사 보고 | https://jugry88.github.io/my-apps/service/ |
+
+- 이전 주소(넷리파이): motion-picket.netlify.app 는 카톡으로 이미 공유돼서 그대로 둠. jugry88-apps.netlify.app 는 더 이상 업데이트하지 않음.
 
 ## 수정 방법
 
 1. 이 저장소의 파일을 고쳐서 저장(커밋)해요.
-2. 넷리파이가 자동으로 새 버전을 올려요. 링크는 그대로예요.
+2. GitHub Pages가 1~2분 안에 자동으로 새 버전을 올려요. 링크는 그대로예요.
